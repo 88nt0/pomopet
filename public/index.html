@@ -1,1 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PomoPet — Gamificación y Estudio</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
+:root{
+  --pixel: 4px;
+  --green:  #8bc34a;
+  --green2: #4caf50;
+  --teal:   #26c6a6;
+  --yellow: #ffd54f;
+  --pink:   #f48fb1;
+  --red:    #ef5350;
+  --dark:   #1a1a2e;
+  --darker: #12121e;
+  --mid:    #252540;
+  --card:   #1e1e38;
+  --border: rgba(255,255,255,0.08);
+  --text:   #f0ede8;
+  --muted:  #8888aa;
+  --pixel-font: 'Press Start 2P', monospace;
+  --body-font:  'Nunito', sans-serif;
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--darker);
+  color:var(--text);
+  font-family:var(--body-font);
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* ============ PIXEL GRID BG ============ */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(139,195,74,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(139,195,74,0.03) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;z-index:0;
+}
+
+/* ============ NAV ============ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;height:60px;
+  background:rgba(18,18,30,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:2px solid var(--border);
+}
+.nav-logo{
+  font-family:var(--pixel-font);
+  font-size:13px;color:var(--green);
+  text-shadow:2px 2px 0 rgba(0,0,0,0.5);
+  letter-spacing:1px;
+}
+.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links a{
+  font-family:var(--pixel-font);font-size:9px;
+  color:var(--muted);text-decoration:none;
+  letter-spacing:0.5px;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--green)}
+.nav-btn{
+  font-family:var(--pixel-font);font-size:9px;
+  background:var(--green);color:#000;
+  border:none;padding:10px 18px;
+  cursor:pointer;
+  image-rendering:pixelated;
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+  transition:background 0.15s,transform 0.1s;
+  text-decoration:none;
+  display:inline-block;
+}
+.nav-btn:hover{background:var(--teal);transform:translateY(-1px)}
+.nav-btn:active{transform:translateY(1px)}
+
+/* ============ HERO ============ */
+.hero{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:80px 2rem 4rem;
+  position:relative;z-index:1;
+}
+.hero-inner{
+  max-width:1100px;width:100%;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:4rem;align-items:center;
+}
+.pixel-label{
+  font-family:var(--pixel-font);font-size:9px;
+  color:var(--teal);letter-spacing:2px;
+  margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:8px;
+}
+.pixel-label::before{
+  content:'';width:8px;height:8px;
+  background:var(--teal);
+  display:inline-block;
+  animation:blink-sq 1.2s step-end infinite;
+}
+@keyframes blink-sq{0%,100%{opacity:1}50%{opacity:0}}
+.hero-title{
+  font-family:var(--pixel-font);
+  font-size:clamp(22px,4vw,40px);
+  line-height:1.6;
+  color:var(--green);
+  text-shadow:4px 4px 0 rgba(0,0,0,0.4);
+  margin-bottom:1.5rem;
+}
+.hero-title span{color:var(--yellow)}
+.hero-desc{
+  font-size:17px;line-height:1.8;
+  color:var(--muted);max-width:480px;
+  margin-bottom:2.5rem;
+}
+.hero-desc strong{color:var(--text)}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}
+.btn-primary{
+  font-family:var(--pixel-font);font-size:10px;
+  background:var(--green);color:#000;
+  border:none;padding:16px 28px;
+  cursor:pointer;text-decoration:none;
+  display:inline-block;
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+  transition:all 0.15s;
+  position:relative;
+}
+.btn-primary::after{
+  content:'';
+  position:absolute;bottom:-4px;left:4px;right:-4px;top:4px;
+  background:rgba(0,0,0,0.4);
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+  z-index:-1;
+}
+.btn-primary:hover{background:var(--teal);transform:translate(-2px,-2px)}
+.btn-primary:active{transform:translate(0,0)}
+.btn-secondary{
+  font-family:var(--pixel-font);font-size:9px;
+  background:transparent;color:var(--text);
+  border:2px solid var(--border);
+  padding:14px 24px;
+  cursor:pointer;text-decoration:none;
+  display:inline-block;
+  transition:all 0.15s;
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+
+/* ============ PIXEL ART POMO ============ */
+.hero-art{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2rem;
+  animation:heroFloat 3s ease-in-out infinite;
+}
+@keyframes heroFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-12px)}
+}
+.pomo-canvas{
+  image-rendering:pixelated;
+  width:200px;height:200px;
+}
+.hearts{
+  display:flex;gap:8px;
+  animation:heartPulse 2s ease-in-out infinite;
+}
+@keyframes heartPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.1)}
+}
+.heart{width:32px;height:32px;image-rendering:pixelated}
+
+/* Arcade machine pixel art */
+.arcade-wrap{
+  position:relative;
+  filter:drop-shadow(0 20px 40px rgba(139,195,74,0.2));
+}
+/* SVG arcade cabinet pixel art inline */
+
+/* ============ STATS TICKER ============ */
+.ticker{
+  background:var(--green);
+  padding:10px 0;
+  overflow:hidden;
+  position:relative;z-index:1;
+}
+.ticker-inner{
+  display:flex;gap:0;
+  white-space:nowrap;
+  animation:ticker 20s linear infinite;
+}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-item{
+  font-family:var(--pixel-font);font-size:9px;
+  color:#000;padding:0 3rem;
+  flex-shrink:0;
+}
+.ticker-item::before{content:'★ '}
+
+/* ============ FEATURES ============ */
+.section{
+  max-width:1100px;margin:0 auto;
+  padding:5rem 2rem;
+  position:relative;z-index:1;
+}
+.section-label{
+  font-family:var(--pixel-font);font-size:9px;
+  color:var(--teal);letter-spacing:2px;
+  text-align:center;margin-bottom:0.8rem;
+}
+.section-title{
+  font-family:var(--pixel-font);font-size:clamp(14px,2.5vw,22px);
+  text-align:center;line-height:1.8;
+  color:var(--text);
+  margin-bottom:3.5rem;
+}
+.section-title span{color:var(--yellow)}
+
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+}
+.feature-card{
+  background:var(--card);
+  border:2px solid var(--border);
+  padding:2rem;
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.2s,transform 0.2s;
+  clip-path:polygon(0 8px,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px));
+}
+.feature-card:hover{
+  border-color:var(--green);
+  transform:translateY(-4px);
+}
+.feature-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--accent-line,var(--green));
+}
+.feature-icon{
+  font-family:var(--pixel-font);font-size:20px;
+  margin-bottom:1rem;display:block;
+}
+.feature-title{
+  font-family:var(--pixel-font);font-size:11px;
+  color:var(--text);margin-bottom:0.8rem;
+  line-height:1.6;
+}
+.feature-desc{
+  font-size:14px;color:var(--muted);line-height:1.7;
+}
+
+/* ============ HOW IT WORKS ============ */
+.how-section{
+  background:var(--mid);
+  position:relative;z-index:1;
+}
+.how-inner{
+  max-width:1100px;margin:0 auto;
+  padding:5rem 2rem;
+}
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:2rem;
+  margin-top:3rem;
+}
+.step{
+  text-align:center;
+  position:relative;
+}
+.step:not(:last-child)::after{
+  content:'▶';
+  position:absolute;right:-1rem;top:1.5rem;
+  font-family:var(--pixel-font);font-size:10px;
+  color:var(--green);opacity:0.5;
+}
+.step-num{
+  font-family:var(--pixel-font);font-size:28px;
+  color:var(--green);
+  text-shadow:3px 3px 0 rgba(0,0,0,0.4);
+  display:block;margin-bottom:1rem;
+}
+.step-icon{
+  font-size:36px;display:block;
+  margin-bottom:1rem;
+}
+.step-title{
+  font-family:var(--pixel-font);font-size:10px;
+  color:var(--text);margin-bottom:0.6rem;line-height:1.6;
+}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ============ TECH STACK ============ */
+.tech-grid{
+  display:flex;flex-wrap:wrap;
+  gap:12px;justify-content:center;
+  margin-top:2.5rem;
+}
+.tech-pill{
+  font-family:var(--pixel-font);font-size:8px;
+  padding:10px 16px;
+  background:var(--card);
+  border:2px solid var(--border);
+  color:var(--muted);
+  transition:all 0.15s;
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+}
+.tech-pill:hover{border-color:var(--teal);color:var(--teal)}
+.tech-pill.hl{border-color:var(--green);color:var(--green)}
+
+/* ============ MASCOTA EVOLUTION ============ */
+.evo-section{
+  position:relative;z-index:1;
+}
+.evo-track{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:1rem;
+  flex-wrap:wrap;
+  margin-top:3rem;
+}
+.evo-stage{
+  text-align:center;
+  padding:1.5rem 1.2rem;
+  background:var(--card);
+  border:2px solid var(--border);
+  min-width:140px;
+  transition:all 0.2s;
+  clip-path:polygon(0 6px,6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px));
+}
+.evo-stage:hover{border-color:var(--yellow);transform:scale(1.04)}
+.evo-stage.active{border-color:var(--green);background:rgba(139,195,74,0.08)}
+.evo-face{
+  font-family:var(--pixel-font);font-size:14px;
+  color:var(--yellow);display:block;
+  margin-bottom:0.8rem;
+}
+.evo-name{
+  font-family:var(--pixel-font);font-size:8px;
+  color:var(--green);margin-bottom:0.4rem;
+}
+.evo-req{font-size:11px;color:var(--muted)}
+.evo-arrow{
+  font-family:var(--pixel-font);font-size:16px;
+  color:var(--green);opacity:0.6;
+}
+
+/* ============ TEAM ============ */
+.team-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  margin-top:3rem;
+}
+.team-card{
+  background:var(--card);
+  border:2px solid var(--border);
+  padding:1.5rem;
+  text-align:center;
+  transition:all 0.2s;
+  clip-path:polygon(0 6px,6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px));
+}
+.team-card:hover{border-color:var(--pink);transform:translateY(-3px)}
+.team-avatar{
+  width:56px;height:56px;
+  background:var(--mid);
+  border:2px solid var(--border);
+  border-radius:0;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1rem;
+  font-family:var(--pixel-font);font-size:16px;
+  color:var(--green);
+}
+.team-name{
+  font-family:var(--pixel-font);font-size:9px;
+  color:var(--text);margin-bottom:0.4rem;line-height:1.6;
+}
+.team-email{font-size:11px;color:var(--muted)}
+
+/* ============ DASHBOARD PREVIEW ============ */
+.preview-section{
+  background:var(--mid);
+  position:relative;z-index:1;
+}
+.preview-inner{
+  max-width:1100px;margin:0 auto;
+  padding:5rem 2rem;
+  display:grid;grid-template-columns:1fr 1.6fr;
+  gap:4rem;align-items:center;
+}
+.preview-text .section-title{text-align:left}
+.preview-text .section-label{text-align:left}
+.preview-features{
+  list-style:none;margin:2rem 0;
+  display:flex;flex-direction:column;gap:12px;
+}
+.preview-features li{
+  display:flex;align-items:center;gap:12px;
+  font-size:15px;color:var(--muted);
+}
+.preview-features li::before{
+  content:'▶';
+  font-family:var(--pixel-font);font-size:8px;
+  color:var(--green);flex-shrink:0;
+}
+.preview-features li strong{color:var(--text)}
+.preview-mock{
+  background:var(--darker);
+  border:2px solid var(--border);
+  border-radius:0;
+  overflow:hidden;
+  position:relative;
+  clip-path:polygon(0 8px,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px));
+  animation:mockGlow 4s ease-in-out infinite;
+}
+@keyframes mockGlow{
+  0%,100%{box-shadow:0 0 30px rgba(139,195,74,0.1)}
+  50%{box-shadow:0 0 60px rgba(139,195,74,0.25)}
+}
+.mock-bar{
+  background:var(--card);
+  padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.mock-dot{
+  width:10px;height:10px;
+  clip-path:polygon(0 2px,2px 0,8px 0,10px 2px,10px 8px,8px 10px,2px 10px,0 8px);
+}
+.mock-url{
+  font-family:var(--pixel-font);font-size:7px;
+  color:var(--muted);margin-left:8px;
+}
+.mock-content{padding:14px;display:flex;flex-direction:column;gap:10px}
+.mock-row{display:flex;gap:8px}
+.mock-metric{
+  background:var(--mid);flex:1;
+  padding:10px;
+  clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px));
+}
+.mock-metric-val{
+  font-family:var(--pixel-font);font-size:14px;
+  color:var(--green);
+}
+.mock-metric-lbl{font-size:9px;color:var(--muted);margin-top:3px}
+.mock-bar-chart{
+  background:var(--mid);padding:12px;
+  display:flex;align-items:flex-end;gap:6px;
+  height:80px;
+}
+.mock-bar-item{
+  background:var(--green);
+  flex:1;border-radius:0;
+  opacity:0.7;
+  transition:opacity 0.2s;
+  min-height:4px;
+}
+.mock-bar-chart:hover .mock-bar-item{opacity:1}
+.mock-pet-area{
+  background:var(--mid);
+  padding:14px;
+  text-align:center;
+}
+.mock-pet-face{
+  font-family:var(--pixel-font);font-size:14px;
+  color:var(--yellow);
+  animation:petBob2 2s ease-in-out infinite;
+}
+@keyframes petBob2{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+.mock-timer{
+  font-family:var(--pixel-font);font-size:20px;
+  color:var(--green);margin-top:4px;
+}
+
+/* ============ CTA FINAL ============ */
+.cta-section{
+  position:relative;z-index:1;
+  text-align:center;
+  padding:6rem 2rem;
+  overflow:hidden;
+}
+.cta-section::before{
+  content:'';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(139,195,74,0.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.cta-title{
+  font-family:var(--pixel-font);
+  font-size:clamp(14px,3vw,26px);
+  color:var(--text);line-height:1.8;
+  margin-bottom:1rem;
+}
+.cta-title span{color:var(--green)}
+.cta-sub{
+  font-size:16px;color:var(--muted);
+  margin-bottom:2.5rem;
+  max-width:500px;margin-left:auto;margin-right:auto;
+}
+
+/* ============ FOOTER ============ */
+footer{
+  background:var(--darker);
+  border-top:2px solid var(--border);
+  padding:2.5rem 2rem;
+  text-align:center;
+  position:relative;z-index:1;
+}
+.footer-logo{
+  font-family:var(--pixel-font);font-size:13px;
+  color:var(--green);margin-bottom:1rem;
+}
+.footer-links{
+  display:flex;gap:2rem;justify-content:center;
+  flex-wrap:wrap;margin-bottom:1.5rem;
+}
+.footer-links a{
+  font-family:var(--pixel-font);font-size:8px;
+  color:var(--muted);text-decoration:none;
+  transition:color 0.2s;
+}
+.footer-links a:hover{color:var(--green)}
+.footer-copy{
+  font-family:var(--pixel-font);font-size:7px;
+  color:var(--muted);line-height:2;
+}
+
+/* ============ SCAN LINE OVERLAY ============ */
+.scanlines{
+  position:fixed;inset:0;
+  pointer-events:none;z-index:200;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,transparent 2px,
+    rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr;gap:2rem}
+  .hero-art{order:-1}
+  .step:not(:last-child)::after{display:none}
+  .preview-inner{grid-template-columns:1fr;gap:2rem}
+  .nav-links{display:none}
+}
+
+/* ============ ANIMATIONS ============ */
+.fade-in{
+  opacity:0;transform:translateY(24px);
+  animation:fadeUp 0.6s ease forwards;
+}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.delay-1{animation-delay:0.1s}
+.delay-2{animation-delay:0.2s}
+.delay-3{animation-delay:0.3s}
+.delay-4{animation-delay:0.4s}
+
+/* Status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(139,195,74,0.1);
+  border:1px solid rgba(139,195,74,0.3);
+  padding:6px 14px;
+  font-family:var(--pixel-font);font-size:8px;
+  color:var(--green);
+  clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px));
+  margin-bottom:1.5rem;
+  width:fit-content;
+}
+.status-badge .dot{
+  width:6px;height:6px;
+  background:var(--green);
+  animation:blink-sq 1.5s step-end infinite;
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">POMOPET</div>
+  <div class="nav-links">
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#mascota">Mascota</a>
+    <a href="#tecnologia">Tecnología</a>
+    <a href="#equipo">Equipo</a>
+  </div>
+  <a href="dashboard.html" class="nav-btn">▶ DASHBOARD</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="status-badge">
+        <span class="dot"></span>
+        PROTOTIPO EN DESARROLLO — UDP TICS I
+      </div>
+      <div class="pixel-label fade-in">GAMIFICACIÓN Y ESTUDIO</div>
+      <h1 class="hero-title fade-in delay-1">
+        Estudia más.<br>
+        <span>Distráete menos.</span><br>
+        Cuida a tu POMO.
+      </h1>
+      <p class="hero-desc fade-in delay-2">
+        <strong>PomoPet</strong> combina la técnica Pomodoro con un Tamagotchi físico. Bloquea tu celular en el cofre, enfócate en estudiar, y tu mascota crece contigo.
+      </p>
+      <div class="hero-ctas fade-in delay-3">
+        <a href="dashboard.html" class="btn-primary">▶ VER DASHBOARD</a>
+        <a href="#como-funciona" class="btn-secondary">CÓMO FUNCIONA</a>
+      </div>
+    </div>
+
+    <!-- PIXEL ART HERO -->
+    <div class="hero-art fade-in delay-2">
+      <!-- Pixel art SVG de POMO -->
+      <svg width="220" height="260" viewBox="0 0 220 260" style="image-rendering:pixelated" xmlns="http://www.w3.org/2000/svg">
+        <!-- Arcade cabinet body -->
+        <rect x="40" y="30" width="140" height="190" fill="#5b8fc4" rx="0"/>
+        <!-- Screen bezel -->
+        <rect x="55" y="50" width="110" height="100" fill="#1a1a2e"/>
+        <!-- Screen -->
+        <rect x="62" y="57" width="96" height="86" fill="#2d4a1e"/>
+        <!-- Scanline effect on screen -->
+        <rect x="62" y="57" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="63" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="69" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="75" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="81" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="87" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="93" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="99" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="105" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="111" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="117" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="123" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="129" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="62" y="135" width="96" height="2" fill="rgba(0,0,0,0.3)"/>
+        <!-- POMO face on screen -->
+        <!-- Head -->
+        <rect x="82" y="68" width="56" height="52" fill="#f4c89a"/>
+        <!-- Eyes -->
+        <rect x="92" y="80" width="8" height="8" fill="#1a1a2e"/>
+        <rect x="120" y="80" width="8" height="8" fill="#1a1a2e"/>
+        <!-- Eye shine -->
+        <rect x="94" y="82" width="2" height="2" fill="white"/>
+        <rect x="122" y="82" width="2" height="2" fill="white"/>
+        <!-- Cheeks -->
+        <rect x="86" y="92" width="10" height="6" fill="#f48fb1" opacity="0.7"/>
+        <rect x="124" y="92" width="10" height="6" fill="#f48fb1" opacity="0.7"/>
+        <!-- Smile -->
+        <rect x="98" y="100" width="24" height="4" fill="#1a1a2e"/>
+        <rect x="94" y="96" width="4" height="4" fill="#1a1a2e"/>
+        <rect x="122" y="96" width="4" height="4" fill="#1a1a2e"/>
+        <!-- Ears / arms -->
+        <rect x="74" y="80" width="8" height="16" fill="#f4c89a"/>
+        <rect x="138" y="80" width="8" height="16" fill="#f4c89a"/>
+        <!-- POM title on screen top -->
+        <text x="110" y="70" font-family="'Press Start 2P'" font-size="9" fill="#8bc34a" text-anchor="middle">POM</text>
+        <!-- Hearts below POMO -->
+        <text x="90" y="148" font-size="14" fill="#ef5350">♥</text>
+        <text x="108" y="148" font-size="14" fill="#ef5350">♥</text>
+        <text x="126" y="148" font-size="14" fill="#ef5350">♥</text>
+        <!-- Bottom panel -->
+        <rect x="55" y="165" width="110" height="40" fill="#3a5f8a"/>
+        <!-- Joystick -->
+        <circle cx="85" cy="185" r="12" fill="#4a4a7a"/>
+        <circle cx="85" cy="182" r="7" fill="#6a6aaa"/>
+        <!-- Buttons -->
+        <circle cx="115" cy="183" r="8" fill="#c0392b"/>
+        <circle cx="133" cy="183" r="8" fill="#e67e22"/>
+        <!-- Cabinet sides -->
+        <rect x="30" y="50" width="10" height="170" fill="#4a7ab0"/>
+        <rect x="180" y="50" width="10" height="170" fill="#4a7ab0"/>
+        <!-- Cabinet top -->
+        <rect x="40" y="20" width="140" height="12" fill="#8bc34a"/>
+        <rect x="50" y="10" width="120" height="12" fill="#8bc34a"/>
+        <!-- Legs -->
+        <rect x="55" y="218" width="16" height="32" fill="#4a7ab0"/>
+        <rect x="149" y="218" width="16" height="32" fill="#4a7ab0"/>
+      </svg>
+
+      <!-- Cofre pixel art pequeño -->
+      <svg width="120" height="80" viewBox="0 0 120 80" style="image-rendering:pixelated;opacity:0.85" xmlns="http://www.w3.org/2000/svg">
+        <!-- Chest body -->
+        <rect x="10" y="30" width="100" height="44" fill="#c8a060"/>
+        <!-- Chest lid -->
+        <rect x="10" y="16" width="100" height="16" fill="#d4ac72" rx="0"/>
+        <rect x="14" y="12" width="92" height="6" fill="#26c6a6"/>
+        <!-- Chest stripes -->
+        <rect x="10" y="40" width="100" height="4" fill="#26c6a6"/>
+        <rect x="10" y="60" width="100" height="4" fill="#26c6a6"/>
+        <!-- Lock -->
+        <rect x="50" y="44" width="20" height="16" fill="#ffd54f"/>
+        <rect x="54" y="36" width="12" height="12" fill="none" stroke="#ffd54f" stroke-width="4"/>
+        <!-- Corners -->
+        <rect x="10" y="30" width="10" height="10" fill="#26c6a6"/>
+        <rect x="100" y="30" width="10" height="10" fill="#26c6a6"/>
+        <rect x="10" y="64" width="10" height="10" fill="#26c6a6"/>
+        <rect x="100" y="64" width="10" height="10" fill="#26c6a6"/>
+        <!-- Phone peek -->
+        <rect x="42" y="12" width="36" height="6" fill="#1a1a2e" opacity="0.6"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item">POMODORO GAMIFICADO</span>
+    <span class="ticker-item">BLOQUEO FÍSICO DEL CELULAR</span>
+    <span class="ticker-item">MASCOTA VIRTUAL INTERACTIVA</span>
+    <span class="ticker-item">ESP32 + OLED SSD1306</span>
+    <span class="ticker-item">CELDA DE CARGA 0.5KG</span>
+    <span class="ticker-item">ESTADÍSTICAS EN TIEMPO REAL</span>
+    <span class="ticker-item">RACHAS DIARIAS</span>
+    <span class="ticker-item">DISEÑO 3D EN BLENDER</span>
+    <span class="ticker-item">POMODORO GAMIFICADO</span>
+    <span class="ticker-item">BLOQUEO FÍSICO DEL CELULAR</span>
+    <span class="ticker-item">MASCOTA VIRTUAL INTERACTIVA</span>
+    <span class="ticker-item">ESP32 + OLED SSD1306</span>
+    <span class="ticker-item">CELDA DE CARGA 0.5KG</span>
+    <span class="ticker-item">ESTADÍSTICAS EN TIEMPO REAL</span>
+    <span class="ticker-item">RACHAS DIARIAS</span>
+    <span class="ticker-item">DISEÑO 3D EN BLENDER</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">¿QUÉ ES POMOPET?</div>
+  <h2 class="section-title">Un ecosistema <span>híbrido</span> único</h2>
+  <div class="features-grid">
+    <div class="feature-card fade-in" style="--accent-line:var(--green)">
+      <span class="feature-icon">🔒</span>
+      <div class="feature-title">COFRE DE CONTENCIÓN</div>
+      <p class="feature-desc">Tu celular va dentro del cofre. Una celda de carga de 0.5 kg detecta si está ahí. Sin trampa posible: la restricción es física.</p>
+    </div>
+    <div class="feature-card fade-in delay-1" style="--accent-line:var(--teal)">
+      <span class="feature-icon">🐾</span>
+      <div class="feature-title">MASCOTA TAMAGOTCHI</div>
+      <p class="feature-desc">POMO vive en una pantalla OLED. Su salud (corazones) depende de que estudies. Si sacas el celular, POMO sufre.</p>
+    </div>
+    <div class="feature-card fade-in delay-2" style="--accent-line:var(--yellow)">
+      <span class="feature-icon">⏱</span>
+      <div class="feature-title">TÉCNICA POMODORO</div>
+      <p class="feature-desc">Sesiones de 25, 45 o 60 minutos con descansos automáticos. Estructura tu tiempo y reduce la fatiga mental.</p>
+    </div>
+    <div class="feature-card fade-in delay-3" style="--accent-line:var(--pink)">
+      <span class="feature-icon">📊</span>
+      <div class="feature-title">ANALÍTICA PERSONAL</div>
+      <p class="feature-desc">Dashboard web con gráficos de tus sesiones, rachas diarias, horas estudiadas y distribución de estados.</p>
+    </div>
+    <div class="feature-card fade-in" style="--accent-line:var(--red)">
+      <span class="feature-icon">🏆</span>
+      <div class="feature-title">PROGRESIÓN Y RECOMPENSAS</div>
+      <p class="feature-desc">Misiones diarias, niveles y evolución de POMO. Accesorios físicos intercambiables magnéticamente en el módulo Arcade.</p>
+    </div>
+    <div class="feature-card fade-in delay-1" style="--accent-line:var(--teal)">
+      <span class="feature-icon">📡</span>
+      <div class="feature-title">COMUNICACIÓN WI-FI</div>
+      <p class="feature-desc">El cofre y el módulo Arcade se comunican vía Wi-Fi en menos de 2 segundos. Datos sincronizados en Supabase en tiempo real.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="how-section" id="como-funciona">
+  <div class="how-inner">
+    <div class="section-label" style="text-align:center">FLUJO DE USO</div>
+    <h2 class="section-title" style="text-align:center">¿Cómo funciona <span>PomoPet</span>?</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">01</span>
+        <span class="step-icon">📱</span>
+        <div class="step-title">METE EL CELULAR</div>
+        <p class="step-desc">Pon tu celular dentro del cofre. La celda de carga detecta su peso automáticamente.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">02</span>
+        <span class="step-icon">⚙️</span>
+        <div class="step-title">ELIGE EL MODO</div>
+        <p class="step-desc">Selecciona 25, 45 o 60 minutos con el botón A del módulo Arcade.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">03</span>
+        <span class="step-icon">▶</span>
+        <div class="step-title">INICIA LA SESIÓN</div>
+        <p class="step-desc">Presiona B. El timer comienza y POMO entra en modo enfocado.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">04</span>
+        <span class="step-icon">📚</span>
+        <div class="step-title">ESTUDIA</div>
+        <p class="step-desc">Si sacas el celular, POMO te alerta. Mantén el foco para que tu mascota esté feliz.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">05</span>
+        <span class="step-icon">🏅</span>
+        <div class="step-title">COSECHA RECOMPENSAS</div>
+        <p class="step-desc">Completa sesiones, acumula rachas y mira tus estadísticas en el dashboard web.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<section class="preview-section" id="dashboard">
+  <div class="preview-inner">
+    <div class="preview-text">
+      <div class="section-label">PLATAFORMA WEB</div>
+      <h2 class="section-title">Tu progreso,<br><span>visualizado</span></h2>
+      <ul class="preview-features">
+        <li><strong>Sesiones y tiempo enfocado</strong> del día, semana y mes</li>
+        <li><strong>Racha de días</strong> consecutivos estudiando</li>
+        <li><strong>Distribución de estados</strong> (Enfocado / Descanso / Alerta)</li>
+        <li><strong>Historial de sesiones</strong> con resultado y duración</li>
+        <li><strong>Mapa de calor horario</strong> de tu mejor rendimiento</li>
+        <li><strong>Evolución de POMO</strong> en tiempo real</li>
+      </ul>
+      <a href="dashboard.html" class="btn-primary">▶ ABRIR DASHBOARD</a>
+    </div>
+    <!-- Mock dashboard -->
+    <div class="preview-mock">
+      <div class="mock-bar">
+        <span class="mock-dot" style="background:#ef5350"></span>
+        <span class="mock-dot" style="background:#ffd54f"></span>
+        <span class="mock-dot" style="background:#8bc34a"></span>
+        <span class="mock-url">pomopet.app/dashboard</span>
+      </div>
+      <div class="mock-content">
+        <div class="mock-row">
+          <div class="mock-metric"><div class="mock-metric-val">4</div><div class="mock-metric-lbl">Sesiones hoy</div></div>
+          <div class="mock-metric"><div class="mock-metric-val" style="color:#26c6a6">1h45m</div><div class="mock-metric-lbl">Enfocado</div></div>
+          <div class="mock-metric"><div class="mock-metric-val" style="color:#ffd54f">5🔥</div><div class="mock-metric-lbl">Racha días</div></div>
+        </div>
+        <div class="mock-bar-chart">
+          <div class="mock-bar-item" style="height:40%"></div>
+          <div class="mock-bar-item" style="height:65%"></div>
+          <div class="mock-bar-item" style="height:25%"></div>
+          <div class="mock-bar-item" style="height:90%"></div>
+          <div class="mock-bar-item" style="height:50%"></div>
+          <div class="mock-bar-item" style="height:100%"></div>
+          <div class="mock-bar-item" style="height:70%"></div>
+        </div>
+        <div class="mock-pet-area">
+          <div class="mock-pet-face">(^w^)</div>
+          <div class="mock-timer">24:33</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MASCOTA EVOLUTION -->
+<section class="section evo-section" id="mascota">
+  <div class="section-label">SISTEMA DE PROGRESIÓN</div>
+  <h2 class="section-title">POMO <span>evoluciona</span> contigo</h2>
+  <div class="evo-track">
+    <div class="evo-stage">
+      <span class="evo-face">(o.o)</span>
+      <div class="evo-name">POMO BEBÉ</div>
+      <div class="evo-req">0 sesiones</div>
+    </div>
+    <div class="evo-arrow">▶</div>
+    <div class="evo-stage active">
+      <span class="evo-face">(^w^)</span>
+      <div class="evo-name">POMO ESTUDIOSO</div>
+      <div class="evo-req">10 sesiones</div>
+    </div>
+    <div class="evo-arrow">▶</div>
+    <div class="evo-stage">
+      <span class="evo-face">(*v*)</span>
+      <div class="evo-name">POMO NINJA</div>
+      <div class="evo-req">30 sesiones</div>
+    </div>
+    <div class="evo-arrow">▶</div>
+    <div class="evo-stage">
+      <span class="evo-face">(≧◡≦)</span>
+      <div class="evo-name">POMO MAESTRO</div>
+      <div class="evo-req">100 sesiones</div>
+    </div>
+    <div class="evo-arrow">▶</div>
+    <div class="evo-stage">
+      <span class="evo-face" style="color:var(--yellow)">( ★v★)</span>
+      <div class="evo-name">POMO LEGENDARIO</div>
+      <div class="evo-req">300 sesiones</div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section" id="tecnologia" style="padding-top:0">
+  <div class="section-label">TECNOLOGÍA</div>
+  <h2 class="section-title">Stack <span>técnico</span></h2>
+  <div class="tech-grid">
+    <span class="tech-pill hl">ESP32</span>
+    <span class="tech-pill hl">SSD1306 OLED</span>
+    <span class="tech-pill hl">HX711 + Celda 0.5kg</span>
+    <span class="tech-pill hl">MicroPython</span>
+    <span class="tech-pill">Wokwi</span>
+    <span class="tech-pill">Blender</span>
+    <span class="tech-pill">Impresión 3D</span>
+    <span class="tech-pill">Python</span>
+    <span class="tech-pill">HTML5</span>
+    <span class="tech-pill">Supabase (PostgreSQL)</span>
+    <span class="tech-pill">Vercel</span>
+    <span class="tech-pill">GitHub</span>
+    <span class="tech-pill">Wi-Fi (IoT)</span>
+    <span class="tech-pill">Chart.js</span>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section class="section" id="equipo" style="padding-top:0">
+  <div class="section-label">PROYECTO EN TICS I — UDP</div>
+  <h2 class="section-title">El <span>equipo</span></h2>
+  <div style="text-align:center;margin-bottom:1rem">
+    <span style="font-family:var(--pixel-font);font-size:9px;color:var(--muted)">Sección 3 · Ing. Civil en Informática y Telecomunicaciones</span>
+  </div>
+  <div style="text-align:center;margin-bottom:2rem">
+    <span style="font-family:var(--pixel-font);font-size:9px;color:var(--muted)">Profesor: Diego Dujovne</span>
+  </div>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar">YD</div>
+      <div class="team-name">YENY DÍAZ</div>
+      <div class="team-email">yeny.diaz@mail.udp.cl</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">FR</div>
+      <div class="team-name">FERNANDO ROJAS</div>
+      <div class="team-email">fernando.rojas@mail.udp.cl</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">NS</div>
+      <div class="team-name">NAHUEL SÁNCHEZ</div>
+      <div class="team-email">nahuel.sanchez@mail.udp.cl</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">RS</div>
+      <div class="team-name">RENATO SANDOVAL</div>
+      <div class="team-email">renato.sandoval2@mail.udp.cl</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2 class="cta-title">¿Listo para dejar de <span>procrastinar</span>?</h2>
+  <p class="cta-sub">Pon tu celular en el cofre, inicia el timer, y deja que POMO te motive a estudiar.</p>
+  <a href="dashboard.html" class="btn-primary">▶ VER MI DASHBOARD</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">POMOPET (^w^)</div>
+  <div class="footer-links">
+    <a href="#">Inicio</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#mascota">Mascota</a>
+    <a href="#equipo">Equipo</a>
+  </div>
+  <div class="footer-copy">
+    Proyecto en TICS I · Universidad Diego Portales · Escuela de Informática y Telecomunicaciones<br>
+    Sección 3 · 2026 · (^w^) PomoPet
+  </div>
+</footer>
+
+<script>
+// Intersection observer para fade-in al scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+      e.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    }
+  });
+}, {threshold:0.1});
+
+document.querySelectorAll('.feature-card,.step,.evo-stage,.team-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  observer.observe(el);
+});
+
+// Animación cara hero alterna
+const faces = ['(^w^)','(>w<)','(*v*)', '(^w^)','(-.-)', '(°w°)'];
+let fi = 0;
+setInterval(() => {
+  fi = (fi+1) % faces.length;
+  document.querySelectorAll('.mock-pet-face').forEach(el => el.textContent = faces[fi]);
+}, 1800);
+
+// Timer mock que corre
+let mockSecs = 24*60+33;
+setInterval(() => {
+  if(mockSecs > 0) mockSecs--;
+  else mockSecs = 25*60;
+  const m = Math.floor(mockSecs/60);
+  const s = mockSecs % 60;
+  const t = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.querySelector('.mock-timer').textContent = t;
+}, 1000);
+</script>
+</body>
+</html>

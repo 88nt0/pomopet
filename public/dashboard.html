@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PomoPet — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0d0f;
+    --surface:  #161618;
+    --surface2: #1e1e21;
+    --border:   rgba(255,255,255,0.07);
+    --border2:  rgba(255,255,255,0.13);
+    --text:     #f0eee8;
+    --muted:    #7a7875;
+    --accent:   #c8f060;
+    --accent2:  #60c8f0;
+    --danger:   #f06060;
+    --warn:     #f0b060;
+    --mono:     'Space Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ---------- HEADER ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-pet {
+    font-family: var(--mono);
+    font-size: 22px;
+    letter-spacing: -1px;
+    animation: blink 3s step-end infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+  .logo-title {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.6; transform: scale(0.8); }
+  }
+  .status-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  /* ---------- GRID SUPERIOR (MÉTRICAS) ---------- */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.3rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .metric-card:hover { border-color: var(--border2); }
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent-bar, var(--accent));
+    border-radius: 12px 0 0 12px;
+  }
+  .metric-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .metric-value {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ---------- GRID PRINCIPAL ---------- */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 720px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .bottom-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- CARDS ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+  }
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+
+  /* ---------- CHART WRAPPERS ---------- */
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* ---------- SESIÓN ACTIVA ---------- */
+  .session-live {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 1rem 0;
+  }
+  .pet-display {
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--accent);
+    text-align: center;
+    animation: petBob 2s ease-in-out infinite;
+  }
+  @keyframes petBob {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  .timer-big {
+    font-family: var(--mono);
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .timer-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .progress-ring-wrap {
+    position: relative;
+    width: 140px; height: 140px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .progress-ring {
+    position: absolute; top: 0; left: 0;
+    transform: rotate(-90deg);
+  }
+  .ring-track  { fill: none; stroke: var(--surface2); stroke-width: 8; }
+  .ring-fill   { fill: none; stroke: var(--accent); stroke-width: 8;
+                 stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+  .ring-center { position: relative; text-align: center; }
+
+  .session-info {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .sinfo {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .sinfo-val {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .sinfo-lbl {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ---------- ESTADO MASCOTA ---------- */
+  .estado-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .estado-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border-left: 3px solid var(--c, var(--accent));
+  }
+  .estado-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .estado-count {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--c, var(--accent));
+  }
+
+  /* ---------- BOTONES CONTROL ---------- */
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* ---------- TABLA HISTORIAL ---------- */
+  .hist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .hist-table th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hist-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--text);
+  }
+  .hist-table tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .pill-ok   { background: rgba(200,240,96,0.12);  color: var(--accent);  }
+  .pill-fail { background: rgba(240,96,96,0.12);   color: var(--danger);  }
+  .pill-rest { background: rgba(96,200,240,0.12);  color: var(--accent2); }
+
+  /* ---------- SELECTOR DE MODO ---------- */
+  .mode-pills {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+  .mode-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-pill.on { background: var(--accent2); color: #000; border-color: var(--accent2); }
+
+  /* ---------- FOOT ---------- */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <a href="index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;margin-bottom:2px">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px">◀ INICIO</span>
+      </a>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="logo-pet" id="headerPet">(^w^)</span>
+          <span class="logo-title">PomoPet</span>
+        </div>
+        <div class="logo-sub">Dashboard · Estudio con técnica pomodoro</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-dot"></div>
+      <span class="status-label" id="statusLabel">EN SESIÓN</span>
+    </div>
+  </header>
+
+  <!-- MÉTRICAS SUPERIORES -->
+  <div class="metrics">
+    <div class="metric-card" style="--accent-bar: var(--accent)">
+      <div class="metric-label">Sesiones hoy</div>
+      <div class="metric-value" id="metSesiones">4</div>
+      <div class="metric-sub">+2 vs ayer</div>
+    </div>
+    <div class="metric-card" style="--accent-bar: var(--accent2)">
+      <div class="metric-label">Tiempo enfocado</div>
+      <div class="metric-value" id="metTiempo">1h 45m</div>
+      <div class="metric-sub">hoy</div>
+    </div>
+    <div class="metric-card" style="--accent-bar: var(--warn)">
+      <div class="metric-label">Racha actual</div>
+      <div class="metric-value" id="metRacha">5</div>
+      <div class="metric-sub">días seguidos</div>
+    </div>
+    <div class="metric-card" style="--accent-bar: var(--danger)">
+      <div class="metric-label">Alertas hoy</div>
+      <div class="metric-value" id="metAlertas">2</div>
+      <div class="metric-sub">veces sin celular</div>
+    </div>
+    <div class="metric-card" style="--accent-bar: #a060f0">
+      <div class="metric-label">Total acumulado</div>
+      <div class="metric-value" id="metTotal">18h</div>
+      <div class="metric-sub">esta semana</div>
+    </div>
+  </div>
+
+  <!-- GRID PRINCIPAL -->
+  <div class="main-grid">
+
+    <!-- GRÁFICO SEMANAL -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Minutos enfocados por día</span>
+        <div style="display:flex;gap:6px">
+          <button class="mode-pill on" onclick="switchChart('semana',this)">Semana</button>
+          <button class="mode-pill"    onclick="switchChart('mes',this)">Mes</button>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="chartSemanal" role="img" aria-label="Gráfico de minutos de estudio por día de la semana">Datos de minutos estudiados por día.</canvas>
+      </div>
+      <!-- Leyenda -->
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--muted)">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#c8f060;display:inline-block"></span>Trabajo</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#60c8f0;display:inline-block"></span>Descanso</span>
+      </div>
+    </div>
+
+    <!-- SESIÓN ACTIVA -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Sesión activa</span>
+        <span class="card-badge" id="modoLabel">25 min</span>
+      </div>
+      <div class="session-live">
+        <div class="progress-ring-wrap">
+          <svg class="progress-ring" width="140" height="140" viewBox="0 0 140 140">
+            <circle class="ring-track" cx="70" cy="70" r="58"/>
+            <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="58"
+              stroke-dasharray="364.4" stroke-dashoffset="0"/>
+          </svg>
+          <div class="ring-center">
+            <div class="pet-display" id="petFace">(^w^)</div>
+            <div class="timer-big" id="timerDisplay">24:33</div>
+            <div class="timer-label" id="timerPhase">ESTUDIANDO</div>
+          </div>
+        </div>
+        <div class="session-info">
+          <div class="sinfo">
+            <div class="sinfo-val" id="siModelo">25 min</div>
+            <div class="sinfo-lbl">Modo</div>
+          </div>
+          <div class="sinfo">
+            <div class="sinfo-val" id="siSesion">#4</div>
+            <div class="sinfo-lbl">Sesión</div>
+          </div>
+          <div class="sinfo">
+            <div class="sinfo-val" id="siCelular">SI</div>
+            <div class="sinfo-lbl">Celular</div>
+          </div>
+          <div class="sinfo">
+            <div class="sinfo-val" id="siEstado" style="color:var(--accent)">FOCUS</div>
+            <div class="sinfo-lbl">Estado</div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn active" onclick="simStart()">▶ INICIAR</button>
+        <button class="btn" onclick="simPause()">⏸ PAUSA</button>
+        <button class="btn" onclick="simReset()">↺ RESET</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GRID INFERIOR -->
+  <div class="bottom-grid">
+
+    <!-- DISTRIBUCIÓN DE ESTADOS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Distribución de estados</span>
+        <span class="card-badge">Esta semana</span>
+      </div>
+      <div class="chart-wrap" style="height:180px">
+        <canvas id="chartDonut" role="img" aria-label="Gráfico de distribución de tiempo por estado">Distribución: Enfocado 68%, Descanso 22%, Alerta 10%.</canvas>
+      </div>
+      <div class="estado-grid" style="margin-top:1rem">
+        <div class="estado-row" style="--c:var(--accent)">
+          <span class="estado-name">Enfocado</span>
+          <span class="estado-count">68%</span>
+        </div>
+        <div class="estado-row" style="--c:var(--accent2)">
+          <span class="estado-name">Descanso</span>
+          <span class="estado-count">22%</span>
+        </div>
+        <div class="estado-row" style="--c:var(--danger)">
+          <span class="estado-name">Alerta</span>
+          <span class="estado-count">10%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL DE SESIONES -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Últimas sesiones</span>
+        <span class="card-badge" id="histCount">6 registros</span>
+      </div>
+      <table class="hist-table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Duración</th>
+            <th>Modo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="histBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- GRÁFICO DE RACHA SEMANAL -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-header">
+      <span class="card-title">Sesiones por hora del día</span>
+      <span class="card-badge">Esta semana</span>
+    </div>
+    <div class="chart-wrap" style="height:160px">
+      <canvas id="chartHoras" role="img" aria-label="Gráfico de sesiones por hora del día">Sesiones agrupadas por hora del día.</canvas>
+    </div>
+  </div>
+
+  <footer>POMOPET &nbsp;|&nbsp; ESP32 + OLED SSD1306 + HX710 &nbsp;|&nbsp; (^w^)</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ============================================================
+//  DATOS DE EJEMPLO
+// ============================================================
+const DATA_SEMANA = {
+  labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+  trabajo:  [50, 75, 25, 90, 45, 100, 60],
+  descanso: [10, 15,  5, 15, 10,  20, 10]
+};
+const DATA_MES = {
+  labels: ['S1','S2','S3','S4'],
+  trabajo:  [340, 420, 280, 510],
+  descanso: [60,  80,  50,  95]
+};
+const HISTORIAL = [
+  { hora:'14:32', dur:'25:00', modo:'25 min', estado:'ok'   },
+  { hora:'13:55', dur:'24:12', modo:'25 min', estado:'fail' },
+  { hora:'13:10', dur:'25:00', modo:'25 min', estado:'ok'   },
+  { hora:'11:40', dur:'45:00', modo:'45 min', estado:'ok'   },
+  { hora:'10:45', dur:'10:00', modo:'45 min', estado:'rest' },
+  { hora:'09:50', dur:'44:33', modo:'45 min', estado:'ok'   },
+];
+
+// ============================================================
+//  CHART 1 — BARRAS AGRUPADAS SEMANAL/MES
+// ============================================================
+const ctxBar = document.getElementById('chartSemanal').getContext('2d');
+let chartBar = new Chart(ctxBar, {
+  type: 'bar',
+  data: {
+    labels: DATA_SEMANA.labels,
+    datasets: [
+      { label:'Trabajo',  data: DATA_SEMANA.trabajo,
+        backgroundColor: 'rgba(200,240,96,0.75)', borderRadius: 4, borderSkipped: false },
+      { label:'Descanso', data: DATA_SEMANA.descanso,
+        backgroundColor: 'rgba(96,200,240,0.5)',  borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { mode: 'index' } },
+    scales: {
+      x: { ticks: { color:'#7a7875', font:{size:11} }, grid: { color:'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color:'#7a7875', font:{size:11},
+            callback: v => v + 'm' },
+           grid: { color:'rgba(255,255,255,0.06)' },
+           border: { dash:[4,4] } }
+    }
+  }
+});
+
+function switchChart(modo, btn) {
+  document.querySelectorAll('.mode-pill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const d = modo === 'semana' ? DATA_SEMANA : DATA_MES;
+  chartBar.data.labels = d.labels;
+  chartBar.data.datasets[0].data = d.trabajo;
+  chartBar.data.datasets[1].data = d.descanso;
+  chartBar.update();
+}
+
+// ============================================================
+//  CHART 2 — DONUT ESTADOS
+// ============================================================
+const ctxDonut = document.getElementById('chartDonut').getContext('2d');
+new Chart(ctxDonut, {
+  type: 'doughnut',
+  data: {
+    labels: ['Enfocado','Descanso','Alerta'],
+    datasets: [{
+      data: [68, 22, 10],
+      backgroundColor: ['rgba(200,240,96,0.8)','rgba(96,200,240,0.7)','rgba(240,96,96,0.7)'],
+      borderColor: '#161618',
+      borderWidth: 3,
+      hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.parsed + '%' }
+    }}
+  }
+});
+
+// ============================================================
+//  CHART 3 — SESIONES POR HORA
+// ============================================================
+const horas = Array.from({length:24}, (_,i) => i + 'h');
+const sesHora = [0,0,0,0,0,0,1,2,3,4,3,2,1,3,4,3,2,1,0,0,0,0,0,0];
+const ctxH = document.getElementById('chartHoras').getContext('2d');
+new Chart(ctxH, {
+  type: 'bar',
+  data: {
+    labels: horas,
+    datasets: [{
+      label: 'Sesiones',
+      data: sesHora,
+      backgroundColor: ctx => {
+        const v = ctx.raw;
+        if (v >= 4) return 'rgba(200,240,96,0.85)';
+        if (v >= 2) return 'rgba(200,240,96,0.45)';
+        return 'rgba(200,240,96,0.15)';
+      },
+      borderRadius: 3, borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color:'#7a7875', font:{size:10},
+            callback: (_,i) => i % 3 === 0 ? horas[i] : '' },
+           grid: { display: false } },
+      y: { display: false }
+    }
+  }
+});
+
+// ============================================================
+//  HISTORIAL
+// ============================================================
+const labels = { ok:'COMPLETA', fail:'ALERTA', rest:'DESCANSO' };
+const pills   = { ok:'pill-ok', fail:'pill-fail', rest:'pill-rest' };
+const tbody = document.getElementById('histBody');
+HISTORIAL.forEach(s => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-family:var(--mono);font-size:12px">${s.hora}</td>
+    <td style="font-family:var(--mono);font-size:12px">${s.dur}</td>
+    <td>${s.modo}</td>
+    <td><span class="pill ${pills[s.estado]}">${labels[s.estado]}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ============================================================
+//  SIMULACIÓN TIMER
+// ============================================================
+const MODOS_SIM = [
+  { work:25*60, label:'25 min' },
+  { work:45*60, label:'45 min' },
+  { work:60*60, label:'60 min' }
+];
+const PETS = {
+  focus:   ['(^w^)','(>w<)','(°w°)'],
+  rest:    ['(*u*)','(~u~)',' zZz '],
+  alerta:  ['(!o!)','(>o<)'],
+  idle:    ['(o.o)','(-.-)',  '(^.^)']
+};
+let simState = 'idle', simSegs = MODOS_SIM[0].work, simMax = MODOS_SIM[0].work;
+let simInterval = null, modoIdx = 0, petIdx = 0, petTick = 0;
+
+const ringFill = document.getElementById('ringFill');
+const CIRC = 2 * Math.PI * 58;
+
+function updateRing(segs, max) {
+  const pct = segs / max;
+  ringFill.style.strokeDashoffset = (CIRC * (1 - pct)).toFixed(1);
+}
+
+function updateTimer(segs) {
+  const m = Math.floor(segs/60), s = segs%60;
+  document.getElementById('timerDisplay').textContent =
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function updatePetDisplay(group) {
+  const faces = PETS[group];
+  const face = faces[petIdx % faces.length];
+  document.getElementById('petFace').textContent = face;
+  document.getElementById('headerPet').textContent = face;
+}
+
+function setUIState(st) {
+  const labels = { focus:'ESTUDIANDO', rest:'DESCANSO', alerta:'ALERTA!', idle:'EN MENÚ' };
+  const colors  = { focus:'var(--accent)', rest:'var(--accent2)', alerta:'var(--danger)', idle:'var(--muted)' };
+  const estados = { focus:'FOCUS', rest:'REST', alerta:'ALERTA', idle:'IDLE' };
+  document.getElementById('timerPhase').textContent = labels[st] || st;
+  document.getElementById('timerDisplay').style.color = colors[st] || 'var(--accent)';
+  document.getElementById('siEstado').textContent = estados[st] || st;
+  document.getElementById('siEstado').style.color  = colors[st] || 'var(--muted)';
+  document.getElementById('statusLabel').textContent = labels[st] || st;
+  ringFill.style.stroke = colors[st].replace('var(--','').replace(')','');
+  // fix: set actual color
+  const colorMap = { focus:'#c8f060', rest:'#60c8f0', alerta:'#f06060', idle:'#7a7875' };
+  ringFill.style.stroke = colorMap[st] || '#c8f060';
+}
+
+function simTick() {
+  petTick++;
+  if (petTick % 8 === 0) { petIdx++; updatePetDisplay(simState); }
+  if (simState === 'focus' || simState === 'rest') {
+    simSegs--;
+    if (simSegs <= 0) {
+      if (simState === 'focus') {
+        simState = 'rest';
+        simSegs  = Math.floor(MODOS_SIM[modoIdx].work * 0.2);
+        simMax   = simSegs;
+        setUIState('rest');
+      } else {
+        simStop();
+        simState = 'idle';
+        setUIState('idle');
+        updateTimer(MODOS_SIM[modoIdx].work);
+        updateRing(1,1);
+        document.getElementById('siEstado').textContent = 'FIN';
+        return;
+      }
+    }
+    updateTimer(simSegs);
+    updateRing(simSegs, simMax);
+  }
+}
+
+function simStart() {
+  if (simInterval) return;
+  if (simState === 'idle') {
+    simState = 'focus';
+    simSegs  = MODOS_SIM[modoIdx].work;
+    simMax   = simSegs;
+  }
+  setUIState(simState);
+  simInterval = setInterval(simTick, 1000);
+  document.querySelector('.btn.active')?.classList.remove('active');
+  document.querySelectorAll('.btn')[0].classList.add('active');
+}
+function simPause() {
+  clearInterval(simInterval); simInterval = null;
+  setUIState('idle');
+}
+function simReset() {
+  clearInterval(simInterval); simInterval = null;
+  simState = 'idle'; simSegs = MODOS_SIM[modoIdx].work; simMax = simSegs;
+  updateTimer(simSegs); updateRing(1,1);
+  setUIState('idle');
+  updatePetDisplay('idle');
+}
+function simStop() { clearInterval(simInterval); simInterval = null; }
+
+// Init display
+updateTimer(simSegs);
+updateRing(1,1);
+updatePetDisplay('idle');
+setUIState('idle');
+</script>
+</body>
+</html>
