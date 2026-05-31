@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PomoPet — Acceso</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#8bc34a;--green2:#4caf50;--teal:#26c6a6;--yellow:#ffd54f;
+  --pink:#f48fb1;--red:#ef5350;--dark:#1a1a2e;--darker:#12121e;
+  --mid:#252540;--card:#1e1e38;--border:rgba(255,255,255,0.08);
+  --text:#f0ede8;--muted:#8888aa;
+  --pf:'Press Start 2P',monospace;--bf:'Nunito',sans-serif;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--darker);color:var(--text);
+  font-family:var(--bf);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(139,195,74,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(139,195,74,0.03) 1px,transparent 1px);
+  background-size:32px 32px;pointer-events:none;
+}
+.scanlines{
+  position:fixed;inset:0;pointer-events:none;z-index:200;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+
+/* Partículas flotantes */
+.particles{position:fixed;inset:0;pointer-events:none;overflow:hidden;}
+.particle{
+  position:absolute;font-family:var(--pf);font-size:8px;
+  color:rgba(139,195,74,0.15);animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+  10%{opacity:1}
+  90%{opacity:1}
+  100%{transform:translateY(-100px) rotate(360deg);opacity:0}
+}
+
+.auth-wrap{
+  position:relative;z-index:10;
+  width:100%;max-width:440px;
+  padding:1rem;
+}
+
+/* Logo animado arriba */
+.auth-logo-area{text-align:center;margin-bottom:2rem;}
+.auth-logo{
+  font-family:var(--pf);font-size:22px;color:var(--green);
+  text-shadow:3px 3px 0 rgba(0,0,0,0.5),0 0 30px rgba(139,195,74,0.3);
+  display:block;margin-bottom:1rem;
+  animation:logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse{
+  0%,100%{text-shadow:3px 3px 0 rgba(0,0,0,0.5),0 0 20px rgba(139,195,74,0.2)}
+  50%{text-shadow:3px 3px 0 rgba(0,0,0,0.5),0 0 40px rgba(139,195,74,0.5)}
+}
+.auth-pomo{
+  font-family:var(--pf);font-size:28px;color:var(--yellow);
+  display:block;margin-bottom:0.5rem;
+  animation:pomoBob 2s ease-in-out infinite;
+  text-shadow:0 0 20px rgba(255,213,79,0.4);
+}
+@keyframes pomoBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.auth-sub{font-family:var(--pf);font-size:7px;color:var(--muted);letter-spacing:1px;}
+
+.auth-box{
+  background:var(--card);
+  border:2px solid var(--border);
+  padding:2.5rem 2rem;
+  clip-path:polygon(0 8px,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px));
+  position:relative;
+}
+.auth-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--green),var(--teal),var(--green));
+  background-size:200%;
+  animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+
+.tabs{display:flex;margin-bottom:2rem;border-bottom:2px solid var(--border);}
+.tab{
+  flex:1;text-align:center;padding:12px 8px;cursor:pointer;
+  font-family:var(--pf);font-size:7px;color:var(--muted);
+  border-bottom:3px solid transparent;margin-bottom:-2px;
+  transition:all 0.15s;letter-spacing:0.5px;
+}
+.tab.active{color:var(--green);border-bottom-color:var(--green);}
+.tab:hover:not(.active){color:var(--text);}
+
+.field{margin-bottom:1.4rem;}
+label{
+  display:block;font-family:var(--pf);font-size:7px;
+  color:var(--muted);margin-bottom:8px;letter-spacing:1px;
+}
+input{
+  width:100%;padding:13px 14px;
+  background:var(--mid);border:2px solid var(--border);
+  color:var(--text);font-family:var(--bf);font-size:15px;font-weight:600;
+  outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+  clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px));
+}
+input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(139,195,74,0.1);}
+input::placeholder{color:var(--muted);font-weight:400;}
+
+.btn-auth{
+  width:100%;padding:15px;margin-top:0.5rem;
+  font-family:var(--pf);font-size:10px;letter-spacing:1px;
+  background:var(--green);color:#000;border:none;cursor:pointer;
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+  transition:all 0.15s;position:relative;overflow:hidden;
+}
+.btn-auth::after{
+  content:'';position:absolute;bottom:-4px;left:4px;right:-4px;top:4px;
+  background:rgba(0,0,0,0.3);
+  clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px));
+  z-index:-1;
+}
+.btn-auth:hover{background:var(--teal);transform:translate(-2px,-2px);}
+.btn-auth:active{transform:translate(0,0);}
+.btn-auth:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+.msg{
+  font-family:var(--pf);font-size:7px;line-height:2;
+  padding:12px;margin-top:1rem;text-align:center;
+  display:none;
+}
+.msg.error{
+  background:rgba(239,83,80,0.08);
+  border:1px solid rgba(239,83,80,0.4);color:var(--red);
+}
+.msg.success{
+  background:rgba(139,195,74,0.08);
+  border:1px solid rgba(139,195,74,0.3);color:var(--green);
+}
+.msg.show{display:block;}
+
+.spinner{
+  display:none;text-align:center;padding:10px;
+  font-family:var(--pf);font-size:7px;color:var(--muted);
+}
+.spinner.show{display:block;animation:blink 1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.back-link{
+  display:block;text-align:center;margin-top:1.5rem;
+  font-family:var(--pf);font-size:7px;color:var(--muted);
+  text-decoration:none;transition:color 0.2s;
+}
+.back-link:hover{color:var(--green);}
+
+.divider{
+  display:flex;align-items:center;gap:10px;
+  margin:1rem 0;
+}
+.divider-line{flex:1;height:1px;background:var(--border);}
+.divider-txt{font-family:var(--pf);font-size:7px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="particles" id="particles"></div>
+
+<div class="auth-wrap">
+  <div class="auth-logo-area">
+    <span class="auth-pomo" id="pomoPet">(^w^)</span>
+    <span class="auth-logo">POMOPET</span>
+    <span class="auth-sub">ESTUDIA · CUIDA · EVOLUCIONA</span>
+  </div>
+
+  <div class="auth-box">
+    <div class="tabs">
+      <div class="tab active" id="tab-login" onclick="mostrarTab('login')">▶ INGRESAR</div>
+      <div class="tab" id="tab-reg" onclick="mostrarTab('registro')">+ REGISTRO</div>
+    </div>
+
+    <div id="form-login">
+      <div class="field">
+        <label>CORREO</label>
+        <input type="email" id="l-email" placeholder="usuario@mail.udp.cl" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>CONTRASEÑA</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-auth" id="btn-login" onclick="handleLogin()">▶ ENTRAR AL DASHBOARD</button>
+      <div class="spinner" id="sp-login">Cargando progreso...</div>
+      <div class="msg" id="msg-login"></div>
+    </div>
+
+    <div id="form-registro" style="display:none">
+      <div class="field">
+        <label>TU NOMBRE</label>
+        <input type="text" id="r-nombre" placeholder="Nombre de usuario" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>CORREO</label>
+        <input type="email" id="r-email" placeholder="usuario@mail.udp.cl" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>CONTRASEÑA</label>
+        <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      </div>
+      <button class="btn-auth" id="btn-reg" onclick="handleRegistro()">▶ CREAR CUENTA</button>
+      <div class="spinner" id="sp-reg">Creando aventura...</div>
+      <div class="msg" id="msg-reg"></div>
+    </div>
+
+    <a href="index.html" class="back-link">◀ Volver al inicio</a>
+  </div>
+</div>
+
+<script type="module">
+import { iniciarSesion, registrar, onCambioAuth } from './supabase.js'
+
+// Redirigir si ya hay sesión activa
+onCambioAuth((u) => { if (u) window.location.href = 'dashboard.html' })
+
+window.mostrarTab = function(tab) {
+  document.getElementById('form-login').style.display    = tab === 'login'    ? '' : 'none'
+  document.getElementById('form-registro').style.display = tab === 'registro' ? '' : 'none'
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login')
+  document.getElementById('tab-reg').classList.toggle('active',   tab === 'registro')
+  limpiarMensajes()
+}
+
+function limpiarMensajes() {
+  ['msg-login','msg-reg','sp-login','sp-reg'].forEach(id => {
+    document.getElementById(id).classList.remove('show')
+  })
+}
+
+window.handleLogin = async function() {
+  const correo = document.getElementById('l-email').value.trim()
+  const clave  = document.getElementById('l-pass').value
+  const boton   = document.getElementById('btn-login')
+  const cargando    = document.getElementById('sp-login')
+  const mensaje   = document.getElementById('msg-login')
+
+  if (!correo || !clave) { mostrarMsg(mensaje, 'Completa todos los campos.', 'error'); return }
+
+  boton.disabled = true; cargando.classList.add('show'); mensaje.classList.remove('show')
+  const { error } = await iniciarSesion(correo, clave)
+  cargando.classList.remove('show'); boton.disabled = false
+
+  if (error) mostrarMsg(mensaje, 'Correo o contraseña incorrectos.', 'error')
+  // Si ok → onCambioAuth redirige automáticamente
+}
+
+window.handleRegistro = async function() {
+  const nombreReg = document.getElementById('r-nombre').value.trim()
+  const correoReg  = document.getElementById('r-email').value.trim()
+  const claveReg   = document.getElementById('r-pass').value
+  const botonReg    = document.getElementById('btn-reg')
+  const cargandoReg     = document.getElementById('sp-reg')
+  const mensajeReg    = document.getElementById('msg-reg')
+
+  if (!nombreReg || !correoReg || !claveReg) { mostrarMsg(mensajeReg, 'Completa todos los campos.', 'error'); return }
+  if (claveReg.length < 6) { mostrarMsg(mensajeReg, 'Contraseña mínimo 6 caracteres.', 'error'); return }
+
+  // CORREGIDO AQUÍ: Ahora se usan las variables correctas (con el sufijo 'Reg')
+  botonReg.disabled = true; cargandoReg.classList.add('show'); mensajeReg.classList.remove('show')
+  const { error } = await registrar(nombreReg, correoReg, claveReg)
+  cargandoReg.classList.remove('show'); botonReg.disabled = false
+
+  if (error) mostrarMsg(mensajeReg, error.message ?? 'Error al crear la cuenta.', 'error')
+  else mostrarMsg(mensajeReg, '¡Cuenta creada! Revisa tu correo para confirmar.', 'success')
+}
+
+function mostrarMsg(elemento, texto, tipo) {
+  elemento.textContent = texto
+  elemento.className = `msg ${tipo} show`
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return
+  const tabActivo = document.getElementById('tab-login').classList.contains('active')
+  if (tabActivo) window.handleLogin()
+  else window.handleRegistro()
+})
+</script>
+
+<script>
+const simbolos = ['(^w^)','♥','★','▶','⏱','📚']
+const contenedor = document.getElementById('particles')
+for (let i = 0; i < 12; i++) {
+  const particula = document.createElement('div')
+  particula.className = 'particle'
+  particula.textContent = simbolos[i % simbolos.length]
+  particula.style.left = (Math.random() * 100) + '%'
+  particula.style.animationDuration = (8 + Math.random() * 12) + 's'
+  particula.style.animationDelay    = (-Math.random() * 20) + 's'
+  contenedor.appendChild(particula)
+}
+
+const carasAnimacion = ['(^w^)','(>w<)','(*v*)','(°w°)','(^w^)','(-.-)']
+let indiceAnimacion = 0
+setInterval(() => {
+  indiceAnimacion = (indiceAnimacion + 1) % carasAnimacion.length
+  document.getElementById('pomoPet').textContent = carasAnimacion[indiceAnimacion]
+}, 2000)
+</script>
+</body>
+</html>
