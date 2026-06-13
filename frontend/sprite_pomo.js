@@ -68,15 +68,19 @@ export class SpritePomo {
   // estadoSupabase: valor de sprite_estado en la base de datos
   // Se llama automáticamente cuando Supabase Realtime notifica un cambio
   setEstado(estadoSupabase) {
-    const nombreAnim = ESTADO_A_ANIM[estadoSupabase] ?? 'idle'
-    this.estadoActual = estadoSupabase
+    const nombreAnim   = ESTADO_A_ANIM[estadoSupabase] ?? 'idle'
+    const cambioEstado = estadoSupabase !== this.estadoActual
+    this.estadoActual  = estadoSupabase
 
     // Actualizar label de estado si existe en el DOM
     const labelEl = document.getElementById('pomoStatusLabel')
-    if (labelEl) {
-      labelEl.textContent = ESTADO_A_TEXTO[estadoSupabase] ?? '⏳ Esperando...'
+    const textEl  = document.getElementById('pomoStatusText')
+    if (labelEl && textEl) {
+      textEl.textContent = ESTADO_A_TEXTO[estadoSupabase] ?? '⏳ Esperando...'
       // Color del label según estado
       labelEl.className = 'pomo-status-label estado-' + estadoSupabase
+      // Si el estado cambió, vuelve a mostrar el banner (por si lo habían cerrado)
+      if (cambioEstado) labelEl.classList.remove('hidden')
     }
 
     if (nombreAnim === this.animActual && !this.terminado) return

@@ -88,16 +88,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 }
 /* Sprites en CSS pixel art por estado */
 .sprite-wrap{font-family:var(--pixel);font-size:22px;color:var(--yellow);animation:petBob 2.5s ease-in-out infinite;text-shadow:0 0 20px rgba(251,191,36,0.5);}
-.pomo-status-label{position:relative;z-index:2;margin:4px;max-width:calc(100% - 8px);font-family:var(--pixel);font-size:6px;text-align:center;padding:4px 6px;border-radius:4px;letter-spacing:0.5px;line-height:1.5;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.1);transition:all 0.4s ease;}
+.pomo-status-label{
+  position:absolute;top:6px;left:6px;right:6px;z-index:3;
+  font-family:var(--pixel);font-size:6px;text-align:left;
+  padding:5px 22px 5px 6px;border-radius:4px;letter-spacing:0.5px;line-height:1.5;
+  background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.12);
+  transition:opacity 0.25s ease, transform 0.25s ease;
+}
+.pomo-status-label.hidden{opacity:0;transform:translateY(-6px);pointer-events:none;}
+.pomo-status-close{
+  position:absolute;top:3px;right:3px;width:14px;height:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.08);border:none;border-radius:3px;
+  color:var(--muted);font-size:9px;line-height:1;padding:0;cursor:pointer;
+}
+.pomo-status-close:hover{color:var(--text);background:rgba(255,255,255,0.18);}
 .estado-estudiando{color:#c8f060;border-color:rgba(200,240,96,0.3);}
 .estado-descansando{color:#26c6a6;border-color:rgba(38,198,166,0.3);}
 .estado-durmiendo{color:#8888aa;border-color:rgba(136,136,170,0.3);}
 .estado-celebrando{color:#ffd54f;border-color:rgba(255,213,79,0.3);}
-.estado-asustado{color:#ef5350;border-color:rgba(239,83,80,0.3);animation:shake 0.3s ease-in-out infinite;}
+.estado-asustado{color:#ef5350;border-color:rgba(239,83,80,0.3);}
 .estado-esperando{color:#8888aa;border-color:rgba(136,136,170,0.2);}
-.estado-naciendo{color:#f48fb1;border-color:rgba(244,143,177,0.3);animation:petBob 1.5s ease-in-out infinite;}
-.estado-muriendo{color:#ef5350;border-color:rgba(239,83,80,0.4);animation:shake 0.5s ease-in-out infinite;}
-#contenedorSprite{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;animation:petBob 2.5s ease-in-out infinite;}
+.estado-naciendo{color:#f48fb1;border-color:rgba(244,143,177,0.3);}
+.estado-muriendo{color:#ef5350;border-color:rgba(239,83,80,0.4);}
+#contenedorSprite{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 #contenedorSprite img{image-rendering:pixelated;width:78%;height:78%;object-fit:contain;}
 @keyframes petBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .sprite-wrap.estudiando{color:var(--accent);animation:petBob 1.5s ease-in-out infinite;}
@@ -267,7 +281,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div class="pet-frame">
       <span class="streak-badge" id="sideStreakBadge">🔥 0</span>
       <div class="pet-sprite" id="contenedorSprite"></div>
-      <div id="pomoStatusLabel" class="pomo-status-label estado-esperando">⏳ Esperando...</div>
+      <div id="pomoStatusLabel" class="pomo-status-label estado-esperando">
+        <span id="pomoStatusText">⏳ Esperando...</span>
+        <button class="pomo-status-close" id="pomoStatusClose" title="Cerrar" type="button">×</button>
+      </div>
     </div>
 
     <div class="pet-name-wrap">
@@ -449,6 +466,14 @@ async function iniciarDashboard(usuario) {
   const contenedor = document.getElementById('contenedorSprite')
   if (contenedor) {
     window._animadorPomo = new SpritePomo(contenedor, 'sprites/')
+  }
+
+  // Botón para cerrar el banner de estado del POMO
+  const cerrarStatus = document.getElementById('pomoStatusClose')
+  if (cerrarStatus) {
+    cerrarStatus.onclick = () => {
+      document.getElementById('pomoStatusLabel').classList.add('hidden')
+    }
   }
 
   setLoadingProgress(20, 'Autenticando...')
