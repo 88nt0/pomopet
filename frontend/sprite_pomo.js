@@ -88,27 +88,62 @@ export class SpritePomo {
   }
 
   _iniciarAnim(nombre) {
-    if (this.intervalo) clearInterval(this.intervalo)
+    this._detenerLoop()
     const anim        = ANIMACIONES[nombre] ?? ANIMACIONES.idle
     this.animActual   = nombre
     this.indiceFrame  = 0
     this.terminado    = false
+    this._animConfig  = anim
 
     this._mostrarFrame(anim)
 
-    this.intervalo = setInterval(() => {
-      this.indiceFrame++
-      if (this.indiceFrame >= anim.frames.length) {
-        if (anim.once) {
-          this.indiceFrame = anim.frames.length - 1
-          this.terminado   = true
-          clearInterval(this.intervalo)
-        } else {
-          this.indiceFrame = 0
+    // Usamos requestAnimationFrame en lugar de setInterval para evitar
+    // que el sprite se parta en 2 al cambiar de pestaña
+    const intervaloMs = 1000 / anim.fps
+    let ultimoTiempo  = null
+    let rafId         = null
+
+    const tick = (ahora) => {
+      if (this.terminado || this._animConfig !== anim) return
+      if (ultimoTiempo === null) ultimoTiempo = ahora
+
+      const delta = ahora - ultimoTiempo
+      if (delta >= intervaloMs) {
+        ultimoTiempo = ahora - (delta % intervaloMs)
+        this.indiceFrame++
+        if (this.indiceFrame >= anim.frames.length) {
+          if (anim.once) {
+            this.indiceFrame = anim.frames.length - 1
+            this.terminado   = true
+            return
+          } else {
+            this.indiceFrame = 0
+          }
+        }
+        this._mostrarFrame(anim)
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    rafId = requestAnimationFrame(tick)
+    this._rafId = rafId
+
+    // Al volver a la pestaña, reseteamos el tiempo para evitar saltos
+    if (!this._visibilityHandler) {
+      this._visibilityHandler = () => {
+        if (document.visibilityState === 'visible') {
+          ultimoTiempo = null
         }
       }
-      this._mostrarFrame(anim)
-    }, 1000 / anim.fps)
+      document.addEventListener('visibilitychange', this._visibilityHandler)
+    }
+  }
+
+  _detenerLoop() {
+    if (this._rafId) {
+      cancelAnimationFrame(this._rafId)
+      this._rafId = null
+    }
   }
 
   _mostrarFrame(anim) {
@@ -118,6 +153,10 @@ export class SpritePomo {
   }
 
   detener() {
-    if (this.intervalo) clearInterval(this.intervalo)
+    this._detenerLoop()
+    if (this._visibilityHandler) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler)
+      this._visibilityHandler = null
+    }
   }
 }
