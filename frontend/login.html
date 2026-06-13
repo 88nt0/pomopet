@@ -184,6 +184,7 @@ input::placeholder{color:var(--muted);font-weight:400;}
       <div class="tab" id="tab-reg" onclick="mostrarTab('registro')">+ REGISTRO</div>
     </div>
 
+    <!-- LOGIN -->
     <div id="form-login">
       <div class="field">
         <label>CORREO</label>
@@ -193,15 +194,16 @@ input::placeholder{color:var(--muted);font-weight:400;}
         <label>CONTRASEÑA</label>
         <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="btn-auth" id="btn-login" onclick="handleLogin()">▶ ENTRAR AL DASHBOARD</button>
+      <button class="btn-auth" id="btn-login" onclick="handleLogin()">▶ ENTRAR AL JUEGO</button>
       <div class="spinner" id="sp-login">Cargando progreso...</div>
       <div class="msg" id="msg-login"></div>
     </div>
 
+    <!-- REGISTRO -->
     <div id="form-registro" style="display:none">
       <div class="field">
         <label>TU NOMBRE</label>
-        <input type="text" id="r-nombre" placeholder="Nombre de usuario" autocomplete="name">
+        <input type="text" id="r-nombre" placeholder="¿Cómo se llamará tu POMO?" autocomplete="name">
       </div>
       <div class="field">
         <label>CORREO</label>
@@ -268,10 +270,9 @@ window.handleRegistro = async function() {
   if (!nombreReg || !correoReg || !claveReg) { mostrarMsg(mensajeReg, 'Completa todos los campos.', 'error'); return }
   if (claveReg.length < 6) { mostrarMsg(mensajeReg, 'Contraseña mínimo 6 caracteres.', 'error'); return }
 
-  // CORREGIDO AQUÍ: Ahora se usan las variables correctas (con el sufijo 'Reg')
-  botonReg.disabled = true; cargandoReg.classList.add('show'); mensajeReg.classList.remove('show')
+  boton.disabled = true; cargando.classList.add('show'); mensaje.classList.remove('show')
   const { error } = await registrar(nombreReg, correoReg, claveReg)
-  cargandoReg.classList.remove('show'); botonReg.disabled = false
+  cargando.classList.remove('show'); boton.disabled = false
 
   if (error) mostrarMsg(mensajeReg, error.message ?? 'Error al crear la cuenta.', 'error')
   else mostrarMsg(mensajeReg, '¡Cuenta creada! Revisa tu correo para confirmar.', 'success')

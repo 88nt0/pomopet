@@ -89,6 +89,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 }
 /* Sprites en CSS pixel art por estado */
 .sprite-wrap{font-family:var(--pixel);font-size:22px;color:var(--yellow);animation:petBob 2.5s ease-in-out infinite;text-shadow:0 0 20px rgba(251,191,36,0.5);}
+.pomo-status-label{font-family:var(--pixel);font-size:7px;text-align:center;padding:6px 8px;border-radius:4px;margin-bottom:8px;letter-spacing:0.5px;line-height:1.6;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);transition:all 0.4s ease;}
+.estado-estudiando{color:#c8f060;border-color:rgba(200,240,96,0.3);}
+.estado-descansando{color:#26c6a6;border-color:rgba(38,198,166,0.3);}
+.estado-durmiendo{color:#8888aa;border-color:rgba(136,136,170,0.3);}
+.estado-celebrando{color:#ffd54f;border-color:rgba(255,213,79,0.3);}
+.estado-asustado{color:#ef5350;border-color:rgba(239,83,80,0.3);animation:shake 0.3s ease-in-out infinite;}
+.estado-esperando{color:#8888aa;border-color:rgba(136,136,170,0.2);}
+.estado-naciendo{color:#f48fb1;border-color:rgba(244,143,177,0.3);animation:petBob 1.5s ease-in-out infinite;}
+.estado-muriendo{color:#ef5350;border-color:rgba(239,83,80,0.4);animation:shake 0.5s ease-in-out infinite;}
+#contenedorSprite{animation:petBob 2.5s ease-in-out infinite;}
+#contenedorSprite img{image-rendering:pixelated;width:100%;height:100%;object-fit:contain;}
 @keyframes petBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .sprite-wrap.estudiando{color:var(--accent);animation:petBob 1.5s ease-in-out infinite;}
 .sprite-wrap.descansando{color:var(--teal);animation:petBob 3s ease-in-out infinite;}
@@ -269,9 +280,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   <div class="pet-section">
     <div class="pet-frame">
       <span class="streak-badge" id="sideStreakBadge">🔥 0</span>
-      <div class="pet-sprite">
-        <span class="sprite-wrap durmiendo" id="sidePet">(o.o)</span>
-      </div>
+      <div id="pomoStatusLabel" class="pomo-status-label estado-esperando">⏳ Esperando...</div>
+      <div class="pet-sprite" id="contenedorSprite" style="width:96px;height:96px;margin:0 auto;image-rendering:pixelated;"></div>
     </div>
 
     <div class="pet-name-wrap">
@@ -433,9 +443,12 @@ import {
   onCambioAuth, cerrarSesion, usuarioActual,
   getMascota, getRacha, getResumenDashboard,
   getEstadisticasSemana, getHeatmap,
-  getHistorialSesiones, getMiCofre,
-  suscribirMascota, suscribirCofre, renombrarMascota
+  getHistorialSesiones,
+  suscribirMascota, renombrarMascota,
+  getEstadoDispositivo, suscribirEstadoDispositivo,
+  actualizarSpriteMascota
 } from './supabase.js'
+import { SpritePomo } from './sprite_pomo.js'
 
 // Si no hay sesión activa, redirige a login. Sin excepción.
 onCambioAuth(async (usuario) => {
@@ -462,6 +475,12 @@ window.renombrarPomo = async function() {
 }
 
 async function iniciarDashboard(usuario) {
+  // Iniciar animador de sprites
+  const contenedor = document.getElementById('contenedorSprite')
+  if (contenedor) {
+    window._animadorPomo = new SpritePomo(contenedor, 'sprites/')
+  }
+
   setLoadingProgress(20, 'Autenticando...')
 
   const nombreUsuario = usuario.user_metadata?.nombre ?? usuario.email.split('@')[0]
@@ -474,7 +493,7 @@ async function iniciarDashboard(usuario) {
   const [mascRes, rachaRes, resumenRes, semanaRes, heatRes, histRes, cofreRes] = await Promise.all([
     getMascota(), getRacha(), getResumenDashboard(),
     getEstadisticasSemana(), getHeatmap(),
-    getHistorialSesiones(8), getMiCofre()
+    getHistorialSesiones(8), getEstadoDispositivo()
   ])
 
   setLoadingProgress(70, 'Renderizando datos...')
@@ -499,7 +518,7 @@ async function iniciarDashboard(usuario) {
   renderHistorial(histRes.data ?? [])
 
   // Cofre
-  if (cofreRes.data) renderCofre(cofreRes.data)
+  if (cofreRes.data) renderEstadoDispositivo(cofreRes.data)
 
   setLoadingProgress(100, '¡Listo!')
 
@@ -508,9 +527,430 @@ async function iniciarDashboard(usuario) {
     document.getElementById('loadingScreen').style.display = 'none'
     document.getElementById('appRoot').style.display = 'grid'
 
-    // Suscribir realtime: mascota y cofre
+    // Suscribir realtime: mascota (sprite automático por trigger Supabase)
     suscribirMascota(usuario.id, (nuevaMascota) => renderMascota(nuevaMascota))
-    suscribirCofre(usuario.id, (nuevoCofre) => renderCofre(nuevoCofre))
+
+    // Suscribir realtime: estado dispositivo MQTT (cofre + arcade)
+    suscribirEstadoDispositivo(usuario.id, (nuevoEstado) => renderEstadoDispositivo(nuevoEstado))
+  }, 400)
+}
+
+function setLoadingProgress(pct, txt) {
+  document.getElementById('ldBar').style.width = pct + '%'
+  document.getElementById('ldTxt').textContent = txt
+}
+
+const estadosMascota = {
+  estudiando:  { cara:'(^-^)', clase:'estudiando', mood:'Estudiando concentrado' },
+  descansando: { cara:'(*u*)', clase:'descansando', mood:'Descansando tranquilo' },
+  durmiendo:   { cara:'(o.o)', clase:'durmiendo',   mood:'Esperando...' },
+  celebrando:  { cara:'(★w★)', clase:'celebrando',  mood:'¡Celebrando logro!' },
+  asustado:    { cara:'(>_<)', clase:'asustado',     mood:'¡Celular fuera del cofre!' },
+  esperando:   { cara:'(-.-)', clase:'durmiendo',    mood:'Esperando sesión...' },
+}
+const textoHumor = {
+  feliz:   '¡Feliz y motivado!',
+  neutral: 'Bien, sin novedades',
+  triste:  'Triste, necesita sesiones...',
+}
+const nombresEtapa = {
+  recien_nacido:      'Recién Nacido',
+  aprendiz:   'APRENDIZ',
+  culto:     'CULTO',
+  maestro:   'MAESTRO',
+  sabio:  'SABIO',
+}
+
+function renderMascota(m) {
+  const estadoSprite = estadosMascota[m.sprite_estado] ?? estadosMascota.durmiendo
+  // Actualizar sprite animado (cambia imagen + label automáticamente)
+  if (window._animadorPomo) window._animadorPomo.setEstado(m.sprite_estado)
+  // Actualizar cara en el timer central
+  const estadoCara = estadoSprite?.cara ?? '(o.o)'
+  const livePetEl = document.getElementById('livePet')
+  if (livePetEl) livePetEl.textContent = estadoCara
+
+  document.getElementById('sidePetName').textContent = m.nombre ?? 'POMY'
+  document.getElementById('sideEtapa').textContent   = nombresEtapa[m.etapa] ?? 'NUEVO'
+  const topEtapaEl = document.getElementById('topEtapa')
+  if (topEtapaEl) topEtapaEl.textContent = nombresEtapa[m.etapa] ?? 'Nuevo estudiante'
+
+  const textoEstado = textoHumor[m.sprite_humor] ?? estadoSprite?.mood ?? 'Esperando...'
+  document.getElementById('sideMood').textContent = textoEstado
+
+  // Corazones
+  const hearts = document.getElementById('sideHearts')
+  hearts.innerHTML = ''
+  for (let i = 0; i < 5; i++) {
+    const h = document.createElement('span')
+    h.className = 'heart' + (i < m.corazones ? '' : ' empty')
+    h.textContent = i < m.corazones ? '❤️' : '🖤'
+    hearts.appendChild(h)
+  }
+
+  // Nivel y XP
+  document.getElementById('sideNivel').textContent = m.nivel
+  const porcentajeXP = Math.round((m.xp_actual / m.xp_para_nivel) * 100)
+  document.getElementById('levelFill').style.width = porcentajeXP + '%'
+  document.getElementById('levelSub').textContent  = `${porcentajeXP}% al nivel ${m.nivel + 1}`
+}
+
+function renderRacha(r) {
+  const rachaActual = r.racha_actual ?? 0
+  document.getElementById('sideStreak').textContent      = rachaActual
+  document.getElementById('sideStreakBadge').textContent = '🔥 ' + rachaActual
+  document.getElementById('sideStreakSub').textContent   =
+    rachaActual > 0 ? `Máximo: ${r.racha_maxima} días` : '¡Empieza hoy!'
+}
+
+function renderMetricas(d) {
+  document.getElementById('metSesiones').textContent = d.sesiones_hoy ?? 0
+  document.getElementById('metHoras').textContent    = (d.horas_totales ?? 0) + 'h'
+  document.getElementById('metMeta').textContent     = Math.round(d.meta_diaria_pct ?? 0) + '%'
+  document.getElementById('metConsist').textContent  = Math.round(d.consistencia_pct ?? 0) + '%'
+}
+
+const diasSemana = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+const franjas = ['6am','9am','12pm','3pm','6pm','9pm']
+const mapaFranjas = { 6:0, 9:1, 12:2, 15:3, 18:4, 21:5 }
+
+function renderHeatmap(rows) {
+  // Construir matriz 6×7 vacía
+  const matriz = Array.from({length:6}, () => Array(7).fill(0))
+  rows.forEach(r => {
+    const fi = mapaFranjas[r.franja_hora]
+    const di = r.dia_semana
+    if (fi !== undefined && di >= 0 && di <= 6)
+      matriz[fi][di] = r.intensidad ?? 0
+  })
+
+  const grid = document.getElementById('heatmapGrid')
+  grid.innerHTML = ''
+  // Header vacío
+  grid.appendChild(document.createElement('div'))
+  diasSemana.forEach(d => {
+    const h = document.createElement('div'); h.className = 'hm-header'; h.textContent = d
+    grid.appendChild(h)
+  })
+  matriz.forEach((row, ri) => {
+    const tl = document.createElement('div'); tl.className = 'hm-time'; tl.textContent = franjas[ri]
+    grid.appendChild(tl)
+    row.forEach((val) => {
+      const cell = document.createElement('div')
+      cell.className = 'hm-cell'; cell.dataset.v = val
+      cell.addEventListener('mouseenter', e => showTooltip(e, franjas[ri], val))
+      cell.addEventListener('mouseleave', hideTooltip)
+      grid.appendChild(cell)
+    })
+  })
+}
+
+const etiquetasDia = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+
+function renderSemana(stats) {
+  const container = document.getElementById('weekBars')
+  container.innerHTML = ''
+  const maxSesiones = Math.max(...stats.map(s => s.total_sesiones), 1)
+  const totalSemana = stats.reduce((a, s) => a + s.total_sesiones, 0)
+
+  const hoy = new Date().getDay()
+  const indiceDiaHoy = hoy === 0 ? 6 : hoy - 1
+
+  stats.forEach((s, i) => {
+    const pct   = Math.round((s.total_sesiones / maxSesiones) * 100)
+    const esHoy = i === indiceDiaHoy
+    const row   = document.createElement('div'); row.className = 'week-day'
+    row.innerHTML = `
+      <span class="wd-label" style="${esHoy ? 'color:var(--accent)' : ''}">${etiquetasDia[i]}</span>
+      <div class="wd-bar-wrap">
+        <div class="wd-bar ${esHoy ? 'today' : ''}" style="width:${pct}%"></div>
+      </div>
+      <span class="wd-pct" style="${esHoy ? 'color:var(--accent)' : ''}">${s.total_sesiones}</span>
+      <span class="wd-sessions">s</span>
+    `
+    container.appendChild(row)
+  })
+  document.getElementById('growthVal').textContent = totalSemana + ' sesiones'
+}
+
+function renderSemanaVacia() {
+  const container = document.getElementById('weekBars')
+  container.innerHTML = ''
+  etiquetasDia.forEach(d => {
+    const row = document.createElement('div'); row.className = 'week-day'
+    row.innerHTML = `<span class="wd-label">${d}</span><div class="wd-bar-wrap"><div class="wd-bar" style="width:0%"></div></div><span class="wd-pct" style="color:var(--muted)">0</span><span class="wd-sessions">s</span>`
+    container.appendChild(row)
+  })
+  document.getElementById('growthVal').textContent = '0 sesiones'
+}
+
+function renderHistorial(sesiones) {
+  const list = document.getElementById('histList')
+  list.innerHTML = ''
+  if (!sesiones.length) {
+    list.innerHTML = '<div class="empty-state"><span class="es-icon">(o.o)</span><p>Aún no hay sesiones.<br>¡Empieza una!</p></div>'
+    return
+  }
+  const coloresSesion = { completada:'#22c55e', interrumpida:'#ef4444', en_curso:'#fbbf24', saltada:'#6e6a85' }
+  const etiquetasSesion = { completada:'COMPLETA', interrumpida:'ALERTA', en_curso:'EN CURSO', saltada:'SALTADA' }
+  const fondosSesion = { completada:'rgba(34,197,94,0.12)', interrumpida:'rgba(239,68,68,0.12)', en_curso:'rgba(251,191,36,0.12)', saltada:'rgba(110,106,133,0.12)' }
+  const iconosTipo = { focus:'📚', descanso_corto:'☕', descanso_largo:'🌿' }
+
+  sesiones.forEach(s => {
+    const hora = new Date(s.iniciada_en).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'})
+    const dur  = s.duracion_seg ? `${Math.floor(s.duracion_seg/60)}m` : s.modo_minutos + 'min'
+    const item = document.createElement('div'); item.className = 'hist-item'
+    item.innerHTML = `
+      <div class="hist-dot" style="background:${coloresSesion[s.estado]??'#6e6a85'}"></div>
+      <div class="hist-info">
+        <div class="hist-title">${iconosTipo[s.tipo]??'📚'} ${s.tipo === 'focus' ? 'Sesión de estudio' : 'Descanso'} ${s.modo_minutos}min</div>
+        <div class="hist-time">${hora} hs · Sesión #${s.numero_sesion}</div>
+      </div>
+      <div class="hist-dur">${dur}</div>
+      <div class="hist-badge" style="background:${fondosSesion[s.estado]??''};color:${coloresSesion[s.estado]??'#6e6a85'}">${etiquetasSesion[s.estado]??s.estado}</div>
+    `
+    list.appendChild(item)
+  })
+}
+
+function renderCofre(cofre) {
+  const dot     = document.getElementById('cofreDot')
+  const txt     = document.getElementById('cofreStatusTxt')
+  const conDot  = document.getElementById('cofreConectDot')
+  const conTxt  = document.getElementById('cofreConectTxt')
+  const celEl   = document.getElementById('smCel')
+
+  if (!cofre || !cofre.conectado) {
+    dot.className = 'session-dot offline'
+    txt.textContent = 'Cofre desconectado'
+    conDot.className = 'cofre-dot'
+    conTxt.textContent = 'Cofre sin conexión'
+    celEl.textContent = 'NO'; celEl.style.color = 'var(--muted)'
+    return
+  }
+
+  dot.className = 'session-dot'
+  conDot.className = 'cofre-dot active'
+  conTxt.textContent = cofre.nombre ?? 'Cofre conectado'
+
+  if (cofre.celular_dentro) {
+    txt.textContent = '📱 Celular dentro del cofre'
+    celEl.textContent = 'SI'; celEl.style.color = 'var(--accent)'
+  } else {
+    txt.textContent = '⚠️ Celular fuera del cofre'
+    celEl.textContent = 'NO'; celEl.style.color = 'var(--red)'
+  }
+}
+
+const tooltip = document.getElementById('tooltip')
+function showTooltip(e, time, val) {
+  const labels = ['Sin actividad','Baja','Moderada','Alta','Muy alta','Máxima']
+  tooltip.textContent = `${time} · ${labels[val] ?? 'Sin datos'}`
+  tooltip.classList.add('show')
+}
+function hideTooltip() { tooltip.classList.remove('show') }
+document.addEventListener('mousemove', e => {
+  tooltip.style.left = (e.clientX + 14) + 'px'
+  tooltip.style.top  = (e.clientY - 28) + 'px'
+})
+</script>
+
+<!-- TIMER (no necesita módulo) -->
+<script>
+const circunferencia = 2 * Math.PI * 74
+const ringFill = document.getElementById('ringFill')
+const carasFoco = ['(^-^)','(>w<)','(*-*)','(°w°)']
+const carasDescanso = ['(*u*)','(~u~)','(-.-)','(^u^)']
+const carasEspera = ['(o.o)','(-.-)', '(^.^)']
+
+let segundosTimer = 25*60, totalTimer = 25*60, corriendo = false
+let intervaloTimer = null, faseTimer = 'idle', indiceCara = 0, contadorCara = 0
+
+function updateRing(s, max) {
+  ringFill.style.strokeDashoffset = (circunferencia * (1 - s/max)).toFixed(1)
+}
+function updateTimerDisplay(s) {
+  const m = Math.floor(s/60), sec = s%60
+  document.getElementById('liveTimer').textContent = String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0')
+}
+function setPhaseUI(phase) {
+  const colors  = {focus:'var(--accent)',rest:'var(--teal)',idle:'var(--muted)'}
+  const labels  = {focus:'ESTUDIANDO',rest:'DESCANSANDO',idle:'EN MENÚ'}
+  const estados = {focus:'FOCUS',rest:'REST',idle:'IDLE'}
+  ringFill.style.stroke = phase==='focus' ? '#c8f060' : phase==='rest' ? '#26c6a6' : '#6e6a85'
+  document.getElementById('livePhase').textContent = labels[phase]
+  document.getElementById('smEstado').textContent  = estados[phase]
+  document.getElementById('smEstado').style.color  = colors[phase]
+}
+function tickSim() {
+  contadorCara++
+  if (contadorCara % 6 === 0) {
+    indiceCara++
+    const faces = faseTimer==='focus' ? carasFoco : faseTimer==='rest' ? carasDescanso : carasEspera
+    const f = faces[indiceCara % faces.length]
+    document.getElementById('livePet').textContent = f
+  }
+  if (faseTimer === 'focus' || faseTimer === 'rest') {
+    segundosTimer--
+    if (segundosTimer <= 0) {
+      if (faseTimer === 'focus') {
+        faseTimer='rest'; segundosTimer=5*60; totalTimer=5*60; setPhaseUI('rest')
+      } else {
+        faseTimer='idle'; segundosTimer=25*60; totalTimer=25*60
+        corriendo=false; clearInterval(intervaloTimer); intervaloTimer=null
+        document.getElementById('btnPlay').textContent='▶ INICIAR'
+        document.getElementById('btnPlay').className='tc-btn primary'
+        setPhaseUI('idle')
+      }
+    }
+    updateTimerDisplay(segundosTimer)
+    updateRing(segundosTimer, totalTimer)
+  }
+}
+window.simToggle = function() {
+  if (!corriendo) {
+    if (faseTimer==='idle') { faseTimer='focus'; segundosTimer=25*60; totalTimer=25*60; setPhaseUI('focus') }
+    corriendo=true; intervaloTimer=setInterval(tickSim,1000)
+    document.getElementById('btnPlay').textContent='⏸ PAUSAR'
+  } else {
+    corriendo=false; clearInterval(intervaloTimer); intervaloTimer=null
+    document.getElementById('btnPlay').textContent='▶ REANUDAR'
+  }
+}
+window.simSkip = function() {
+  if (faseTimer==='focus') { faseTimer='rest'; segundosTimer=5*60; totalTimer=5*60; setPhaseUI('rest') }
+  else simReset()
+}
+window.simReset = function() {
+  clearInterval(intervaloTimer); intervaloTimer=null
+  corriendo=false; faseTimer='idle'; segundosTimer=25*60; totalTimer=25*60
+  updateTimerDisplay(segundosTimer); updateRing(1,1); setPhaseUI('idle')
+  document.getElementById('btnPlay').textContent='▶ INICIAR'
+  document.getElementById('btnPlay').className='tc-btn primary'
+  document.getElementById('livePet').textContent='(o.o)'
+}
+
+const ldPet = document.getElementById('ldPet')
+const carasLoading = ['(^w^)','(>w<)','(*v*)','(°w°)']
+let idxLoading = 0
+setInterval(() => { ldPet.textContent = carasLoading[++idxLoading % carasLoading.length] }, 500)
+
+updateTimerDisplay(segundosTimer)
+updateRing(1,1)
+setPhaseUI('idle')
+</script>
+
+</body>
+</html
+function renderEstadoDispositivo(disp) {
+  if (!disp) return
+
+  // Actualizar celular/estado en el timer card
+  const celEl    = document.getElementById('smCel')
+  const estadoEl = document.getElementById('smEstado')
+  const modoEl   = document.getElementById('smModo')
+
+  if (celEl) {
+    celEl.textContent  = disp.celular_dentro ? 'SÍ' : 'NO'
+    celEl.style.color  = disp.celular_dentro ? 'var(--accent)' : 'var(--red)'
+  }
+
+  const estadosLabel = {0:'IDLE', 1:'FOCUS', 2:'REST', 3:'ALERTA'}
+  const estadosColor = {0:'var(--muted)', 1:'var(--accent)', 2:'var(--teal)', 3:'var(--red)'}
+  if (estadoEl) {
+    estadoEl.textContent = estadosLabel[disp.estado_sesion] ?? 'IDLE'
+    estadoEl.style.color = estadosColor[disp.estado_sesion] ?? 'var(--muted)'
+  }
+  if (modoEl) modoEl.textContent = (disp.modo_minutos ?? 25) + ' min'
+
+  // Actualizar cofre status
+  renderCofre({
+    conectado:     true,
+    celular_dentro: disp.celular_dentro,
+    servo_bloqueado: disp.servo_bloqueado,
+    nombre:        disp.servo_bloqueado ? '🔒 Cofre bloqueado' : '🔓 Cofre abierto'
+  })
+
+  // El sprite ya se actualiza automáticamente via suscribirMascota (trigger Supabase)
+  // Solo actualizar corazones live desde el estado del dispositivo
+  if (disp.corazones !== undefined) renderCorazonesLive(disp.corazones)
+}
+
+function calcularTiempoAtras(isoStr) {
+  if (!isoStr) return '?'
+  const seg = Math.floor((Date.now() - new Date(isoStr)) / 1000)
+  if (seg < 60)  return seg + 's'
+  if (seg < 3600) return Math.floor(seg/60) + 'min'
+  return Math.floor(seg/3600) + 'h'
+}
+
+function renderCorazonesLive(cantidad) {
+  const cont = document.getElementById('petHearts')
+  if (!cont) return
+  cont.querySelectorAll('.heart').forEach((h, i) => {
+    h.classList.toggle('empty', i >= cantidad)
+  })
+}
+
+
+async function iniciarDashboard(usuario) {
+  // Iniciar animador de sprites
+  const contenedor = document.getElementById('contenedorSprite')
+  if (contenedor) {
+    window._animadorPomo = new SpritePomo(contenedor, 'sprites/')
+  }
+
+  setLoadingProgress(20, 'Autenticando...')
+
+  const nombreUsuario = usuario.user_metadata?.nombre ?? usuario.email.split('@')[0]
+  const inicialesUsuario = nombreUsuario.split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2)
+  document.getElementById('topNombre').textContent = nombreUsuario
+  document.getElementById('topAvatar').textContent = inicialesUsuario
+
+  setLoadingProgress(40, 'Cargando mascota...')
+
+  const [mascRes, rachaRes, resumenRes, semanaRes, heatRes, histRes, cofreRes] = await Promise.all([
+    getMascota(), getRacha(), getResumenDashboard(),
+    getEstadisticasSemana(), getHeatmap(),
+    getHistorialSesiones(8), getEstadoDispositivo()
+  ])
+
+  setLoadingProgress(70, 'Renderizando datos...')
+
+  // Mascota
+  if (mascRes.data) renderMascota(mascRes.data)
+
+  // Racha
+  if (rachaRes.data) renderRacha(rachaRes.data)
+
+  // Resumen métricas
+  if (resumenRes.data) renderMetricas(resumenRes.data)
+
+  // Semana
+  if (semanaRes.data?.length) renderSemana(semanaRes.data)
+  else renderSemanaVacia()
+
+  // Heatmap
+  renderHeatmap(heatRes.data ?? [])
+
+  // Historial
+  renderHistorial(histRes.data ?? [])
+
+  // Cofre
+  if (cofreRes.data) renderEstadoDispositivo(cofreRes.data)
+
+  setLoadingProgress(100, '¡Listo!')
+
+  // Mostrar app
+  setTimeout(() => {
+    document.getElementById('loadingScreen').style.display = 'none'
+    document.getElementById('appRoot').style.display = 'grid'
+
+    // Suscribir realtime: mascota (sprite automático por trigger Supabase)
+    suscribirMascota(usuario.id, (nuevaMascota) => renderMascota(nuevaMascota))
+
+    // Suscribir realtime: estado dispositivo MQTT (cofre + arcade)
+    suscribirEstadoDispositivo(usuario.id, (nuevoEstado) => renderEstadoDispositivo(nuevoEstado))
   }, 400)
 }
 
@@ -545,7 +985,7 @@ function renderMascota(m) {
   const petEl  = document.getElementById('sidePet')
   petEl.textContent = estadoSprite.cara
   petEl.className   = 'sprite-wrap ' + estadoSprite.clase
-  document.getElementById('livePet').textContent = estadoSprite.cara
+  document.getElementById('livePet').textContent = sp.cara
 
   document.getElementById('sidePetName').textContent = m.nombre ?? 'POMY'
   document.getElementById('sideEtapa').textContent   = nombresEtapa[m.etapa] ?? 'NUEVO'

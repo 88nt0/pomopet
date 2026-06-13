@@ -96,6 +96,7 @@ nav{
   display:grid;grid-template-columns:1fr 1fr;
   gap:4rem;align-items:center;
 }
+.hero-text{}
 .pixel-label{
   font-family:var(--pixel-font);font-size:9px;
   color:var(--teal);letter-spacing:2px;
@@ -608,7 +609,7 @@ footer{
     <a href="#tecnologia">Tecnología</a>
     <a href="#equipo">Equipo</a>
   </div>
-  <a href="login.html" class="nav-btn" id="navBtn">▶ INGRESAR</a>
+  <a href="dashboard.html" class="nav-btn">▶ DASHBOARD</a>
 </nav>
 
 <!-- HERO -->
@@ -629,7 +630,7 @@ footer{
         <strong>PomoPet</strong> combina la técnica Pomodoro con un Tamagotchi físico. Bloquea tu celular en el cofre, enfócate en estudiar, y tu mascota crece contigo.
       </p>
       <div class="hero-ctas fade-in delay-3">
-        <a href="login.html" class="btn-primary">▶ VER DASHBOARD</a>
+        <a href="dashboard.html" class="btn-primary">▶ VER DASHBOARD</a>
         <a href="#como-funciona" class="btn-secondary">CÓMO FUNCIONA</a>
       </div>
     </div>
@@ -679,7 +680,7 @@ footer{
         <rect x="74" y="80" width="8" height="16" fill="#f4c89a"/>
         <rect x="138" y="80" width="8" height="16" fill="#f4c89a"/>
         <!-- POM title on screen top -->
-        <text x="110" y="70" font-family="'Press Start 2P'" font-size="9" fill="#8bc34a" text-anchor="middle">POMO</text>
+        <text x="110" y="70" font-family="'Press Start 2P'" font-size="9" fill="#8bc34a" text-anchor="middle">POM</text>
         <!-- Hearts below POMO -->
         <text x="90" y="148" font-size="14" fill="#ef5350">♥</text>
         <text x="108" y="148" font-size="14" fill="#ef5350">♥</text>
@@ -758,12 +759,12 @@ footer{
     <div class="feature-card fade-in" style="--accent-line:var(--green)">
       <span class="feature-icon">🔒</span>
       <div class="feature-title">COFRE DE CONTENCIÓN</div>
-      <p class="feature-desc">Tu celular va dentro del cofre. Una celda de carga de 0.5 kg detecta si está ahí. Sin trampa posible: la restricción es física.</p>
+      <p class="feature-desc">Tu celular va dentro del cofre. Un microswitch detecta si tu celular está dentro. El servomotor traba la tapa — sin trampa posible: la restricción es física.</p>
     </div>
     <div class="feature-card fade-in delay-1" style="--accent-line:var(--teal)">
       <span class="feature-icon">🐾</span>
       <div class="feature-title">MASCOTA TAMAGOTCHI</div>
-      <p class="feature-desc">POMO vive en una pantalla OLED. Su salud (corazones) depende de que estudies. Si sacas el celular, POMO sufre.</p>
+      <p class="feature-desc">POMO vive en una pantalla LCD 20x4. Su salud (corazones) depende de que estudies. Si sacas el celular, POMO sufre.</p>
     </div>
     <div class="feature-card fade-in delay-2" style="--accent-line:var(--yellow)">
       <span class="feature-icon">⏱</span>
@@ -783,7 +784,7 @@ footer{
     <div class="feature-card fade-in delay-1" style="--accent-line:var(--teal)">
       <span class="feature-icon">📡</span>
       <div class="feature-title">COMUNICACIÓN WI-FI</div>
-      <p class="feature-desc">El cofre y el módulo Arcade se comunican vía Wi-Fi en menos de 2 segundos. Datos sincronizados en Supabase en tiempo real.</p>
+      <p class="feature-desc">El cofre y el módulo Arcade se conectan independientemente vía Wi-Fi usando el protocolo MQTT. El broker distribuye los eventos en tiempo real a Supabase y la plataforma web.</p>
     </div>
   </div>
 </section>
@@ -798,7 +799,7 @@ footer{
         <span class="step-num">01</span>
         <span class="step-icon">📱</span>
         <div class="step-title">METE EL CELULAR</div>
-        <p class="step-desc">Pon tu celular dentro del cofre. La celda de carga detecta su peso automáticamente.</p>
+        <p class="step-desc">Pon tu celular dentro del cofre. El microswitch detecta su presencia automáticamente.</p>
       </div>
       <div class="step">
         <span class="step-num">02</span>
@@ -810,7 +811,7 @@ footer{
         <span class="step-num">03</span>
         <span class="step-icon">▶</span>
         <div class="step-title">INICIA LA SESIÓN</div>
-        <p class="step-desc">Presiona el botón B. El timer comienza y POMO entra en modo enfocado.</p>
+        <p class="step-desc">Presiona B. El timer comienza y POMO entra en modo enfocado.</p>
       </div>
       <div class="step">
         <span class="step-num">04</span>
@@ -842,7 +843,7 @@ footer{
         <li><strong>Mapa de calor horario</strong> de tu mejor rendimiento</li>
         <li><strong>Evolución de POMO</strong> en tiempo real</li>
       </ul>
-      <a href="login.html" class="btn-primary">▶ ABRIR DASHBOARD</a>
+      <a href="dashboard.html" class="btn-primary">▶ ABRIR DASHBOARD</a>
     </div>
     <!-- Mock dashboard -->
     <div class="preview-mock">
@@ -883,31 +884,31 @@ footer{
   <div class="evo-track">
     <div class="evo-stage">
       <span class="evo-face">(o.o)</span>
-      <div class="evo-name">RECIÉN NACIDO</div>
+      <div class="evo-name">POMO BEBÉ</div>
       <div class="evo-req">0 sesiones</div>
     </div>
     <div class="evo-arrow">▶</div>
     <div class="evo-stage active">
       <span class="evo-face">(^w^)</span>
-      <div class="evo-name">APRENDIZ</div>
+      <div class="evo-name">POMO ESTUDIOSO</div>
       <div class="evo-req">10 sesiones</div>
     </div>
     <div class="evo-arrow">▶</div>
     <div class="evo-stage">
       <span class="evo-face">(*v*)</span>
-      <div class="evo-name">CULTO</div>
+      <div class="evo-name">POMO CULTO</div>
       <div class="evo-req">30 sesiones</div>
     </div>
     <div class="evo-arrow">▶</div>
     <div class="evo-stage">
       <span class="evo-face">(≧◡≦)</span>
-      <div class="evo-name">MAESTRO</div>
+      <div class="evo-name">POMO MAESTRO</div>
       <div class="evo-req">100 sesiones</div>
     </div>
     <div class="evo-arrow">▶</div>
     <div class="evo-stage">
       <span class="evo-face" style="color:var(--yellow)">( ★v★)</span>
-      <div class="evo-name">SABIO</div>
+      <div class="evo-name">POMO SABIO</div>
       <div class="evo-req">300 sesiones</div>
     </div>
   </div>
@@ -919,9 +920,11 @@ footer{
   <h2 class="section-title">Stack <span>técnico</span></h2>
   <div class="tech-grid">
     <span class="tech-pill hl">ESP32</span>
-    <span class="tech-pill hl">SSD1306 OLED</span>
-    <span class="tech-pill hl">HX711 + Celda 0.5kg</span>
+    <span class="tech-pill hl">LCD 20x04 I2C</span>
+    <span class="tech-pill hl">Microswitch + Servomotor</span>
     <span class="tech-pill hl">MicroPython</span>
+    <span class="tech-pill hl">Joystick + Módulo RTC</span>
+    <span class="tech-pill hl">MQTT (Broker)</span>
     <span class="tech-pill">Wokwi</span>
     <span class="tech-pill">Blender</span>
     <span class="tech-pill">Impresión 3D</span>
@@ -973,7 +976,7 @@ footer{
 <section class="cta-section">
   <h2 class="cta-title">¿Listo para dejar de <span>procrastinar</span>?</h2>
   <p class="cta-sub">Pon tu celular en el cofre, inicia el timer, y deja que POMO te motive a estudiar.</p>
-  <a href="login.html" class="btn-primary">▶ VER MI DASHBOARD</a>
+  <a href="dashboard.html" class="btn-primary">▶ VER MI DASHBOARD</a>
 </section>
 
 <!-- FOOTER -->
@@ -1029,41 +1032,5 @@ setInterval(() => {
   document.querySelector('.mock-timer').textContent = t;
 }, 1000);
 </script>
-
-<script type="module">
-// Detectar si el usuario ya está autenticado y actualizar el botón del nav
-import { onCambioAuth, cerrarSesion } from './supabase.js'
-
-onCambioAuth((usuario) => {
-  const btn = document.getElementById('navBtn')
-  if (!btn) return
-  if (usuario) {
-    btn.textContent = '▶ DASHBOARD'
-    btn.href = 'dashboard.html'
-    // Agregar botón de cerrar sesión pequeño si no existe
-    if (!document.getElementById('btnLogout')) {
-      const logout = document.createElement('a')
-      logout.id = 'btnLogout'
-      logout.href = '#'
-      logout.style.cssText = 'font-family:var(--pixel-font);font-size:8px;color:var(--muted);text-decoration:none;padding:8px 12px;transition:color 0.2s;'
-      logout.textContent = 'Salir'
-      logout.onmouseenter = () => logout.style.color = 'var(--red)'
-      logout.onmouseleave = () => logout.style.color = 'var(--muted)'
-      logout.onclick = async (e) => {
-        e.preventDefault()
-        await cerrarSesion()
-        window.location.reload()
-      }
-      btn.parentNode.insertBefore(logout, btn)
-    }
-  } else {
-    btn.textContent = '▶ INGRESAR'
-    btn.href = 'login.html'
-    const logout = document.getElementById('btnLogout')
-    if (logout) logout.remove()
-  }
-})
-</script>
-
 </body>
 </html>
