@@ -149,15 +149,78 @@ export async function getResumenDashboard() {
 export async function getEstadisticasSemana() {
   const cuenta = await usuarioActual()
   if (!cuenta) return { data: [], error: null }
-  const desde = new Date()
-  desde.setDate(desde.getDate() - 6)
+
+  // Alinear a la semana calendario actual (lunes → domingo), no a "últimos 7 días".
+  // Así el índice 0 SIEMPRE es lunes real y el índice de "hoy" SIEMPRE corresponde
+  // a la fecha real de hoy, sin importar qué día de la semana sea.
+  const hoy = new Date()
+  const dow = hoy.getDay() // 0=domingo..6=sábado
+  const diffLunes = dow === 0 ? 6 : dow - 1
+  const lunes = new Date(hoy)
+  lunes.setDate(hoy.getDate() - diffLunes)
+  const domingo = new Date(lunes)
+  domingo.setDate(lunes.getDate() + 6)
+
   const { data, error } = await supabase
     .from('estadisticas_diarias')
     .select('fecha, total_sesiones, minutos_enfocados, meta_diaria_pct')
     .eq('usuario_id', cuenta.id)
+    .gte('fecha', lunes.toISOString().split('T')[0])
+    .lte('fecha', domingo.toISOString().split('T')[0])
+    .order('fecha', { ascending: true })
+
+  if (error) return { data: [], error }
+
+  // Rellenar los 7 días de la semana (lunes a domingo) aunque no tengan registro,
+  // para que la web nunca desalinee las etiquetas Lun..Dom con la fecha real.
+  const porFecha = new Map((data ?? []).map(d => [d.fecha, d]))
+  const semana = []
+  for (let i = 0; i < 7; i++) {
+    const f = new Date(lunes)
+    f.setDate(lunes.getDate() + i)
+    const fechaISO = f.toISOString().split('T')[0]
+    const registro = porFecha.get(fechaISO)
+    semana.push({
+      fecha: fechaISO,
+      total_sesiones: registro?.total_sesiones ?? 0,
+      minutos_enfocados: registro?.minutos_enfocados ?? 0,
+      meta_diaria_pct: registro?.meta_diaria_pct ?? 0
+    })
+  }
+  return { data: semana, error: null }
+}
+
+// Últimos 30 días para el gráfico "Progreso de estudio"
+// Devuelve [{ fecha, sesiones, minutos }, ...] en orden ascendente (más antiguo -> hoy)
+export async function getProgreso30() {
+  const cuenta = await usuarioActual()
+  if (!cuenta) return { data: [], error: null }
+  const desde = new Date()
+  desde.setDate(desde.getDate() - 29)
+  const { data, error } = await supabase
+    .from('estadisticas_diarias')
+    .select('fecha, total_sesiones, minutos_enfocados')
+    .eq('usuario_id', cuenta.id)
     .gte('fecha', desde.toISOString().split('T')[0])
     .order('fecha', { ascending: true })
-  return { data: data ?? [], error }
+
+  if (error) return { data: [], error }
+
+  // Rellenar días sin registro con 0, para que el gráfico siempre tenga 30 puntos
+  const porFecha = new Map((data ?? []).map(d => [d.fecha, d]))
+  const dias = []
+  for (let i = 29; i >= 0; i--) {
+    const f = new Date()
+    f.setDate(f.getDate() - i)
+    const fechaISO = f.toISOString().split('T')[0]
+    const registro = porFecha.get(fechaISO)
+    dias.push({
+      fecha: fechaISO,
+      sesiones: registro?.total_sesiones ?? 0,
+      minutos: registro?.minutos_enfocados ?? 0
+    })
+  }
+  return { data: dias, error: null }
 }
 
 export async function getHeatmap() {
@@ -181,4 +244,17 @@ export async function getRacha() {
     .select('racha_actual, racha_maxima, ultimo_dia')
     .eq('usuario_id', cuenta.id).single()
   return { data, error }
+}
+
+// ── Misiones completadas (para el resumen del sidebar) ────────
+export async function getMisionesCompletadas() {
+  const cuenta = await usuarioActual()
+  if (!cuenta) return { data: [], error: null }
+  const { data, error } = await supabase
+    .from('usuario_misiones')
+    .select('completada_en, misiones(nombre, icono)')
+    .eq('usuario_id', cuenta.id)
+    .eq('completada', true)
+    .order('completada_en', { ascending: false })
+  return { data: data ?? [], error }
 }

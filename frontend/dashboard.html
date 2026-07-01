@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .sprite-wrap.durmiendo{color:var(--muted);animation:petBob 4s ease-in-out infinite;}
 
-.streak-badge{position:absolute;top:-8px;right:-8px;background:var(--orange);color:#fff;font-family:var(--pixel);font-size:7px;padding:4px 7px;border-radius:20px;border:2px solid var(--surface);z-index:2;}
+
 
 .pet-name-wrap{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
 .pet-name{font-family:var(--pixel);font-size:11px;color:var(--text);}
@@ -150,6 +150,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none;}
 .nav-item:hover{background:var(--card2);color:var(--text)}
 .nav-item.active{background:rgba(200,240,96,0.1);color:var(--accent);border:1px solid rgba(200,240,96,0.15)}
+.nav-stat-label{font-family:var(--pixel);font-size:6px;color:var(--muted);letter-spacing:1px;}
+.mision-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto;max-height:100%;padding-right:2px;}
+.mision-list::-webkit-scrollbar{width:3px}
+.mision-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.mision-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;background:var(--card2);border:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text);}
+.mision-item-icon{font-size:14px;flex-shrink:0;}
+.mision-item-nombre{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mision-empty{font-size:11px;color:var(--muted);padding:7px 9px;}
 .nav-icon{font-size:15px;width:20px;text-align:center;}
 .sidebar-footer{padding:1rem;border-top:1px solid var(--border);font-size:10px;color:var(--muted);text-align:center;line-height:1.8;}
 
@@ -200,6 +208,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .growth-lbl{font-size:11px;color:var(--muted);}
 
 .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── Progreso 30 días ───────────────────────────────────────── */
+.progress-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
+.progress-stats{display:flex;gap:18px;}
+.pstat{text-align:right;}
+.pstat-val{font-family:var(--pixel);font-size:15px;color:var(--text);}
+.pstat-val.up{color:var(--teal);}
+.pstat-val.down{color:var(--red);}
+.pstat-lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
+.progress-chart-wrap{position:relative;margin-top:0.6rem;}
+.progress-chart-wrap svg{width:100%;height:auto;display:block;overflow:visible;}
+.pc-bar{fill:rgba(200,240,96,0.16);transition:fill 0.15s;}
+.pc-bar:hover{fill:rgba(200,240,96,0.32);}
+.pc-bar.today{fill:rgba(200,240,96,0.4);}
+.pc-avg-line{fill:none;stroke:var(--purple);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;}
+.pc-avg-dot{fill:var(--purple);}
+.pc-goal-line{stroke:rgba(255,255,255,0.16);stroke-width:1;stroke-dasharray:3 4;}
+.pc-axis-lbl{font-size:8px;fill:var(--muted);font-family:var(--sans);}
+.progress-legend{display:flex;gap:16px;margin-top:10px;font-size:10px;color:var(--muted);}
+.progress-legend span{display:flex;align-items:center;gap:5px;}
+.pl-swatch{width:10px;height:10px;border-radius:3px;display:inline-block;}
 
 .device-status{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0.6rem 0;}
 .device-face{font-family:var(--pixel);font-size:32px;color:var(--yellow);text-shadow:0 0 20px rgba(251,191,36,0.5);}
@@ -279,7 +308,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <aside class="sidebar">
   <div class="pet-section">
     <div class="pet-frame">
-      <span class="streak-badge" id="sideStreakBadge">🔥 0</span>
       <div class="pet-sprite" id="contenedorSprite"></div>
       <div id="pomoStatusLabel" class="pomo-status-label estado-esperando">
         <span id="pomoStatusText">⏳ Esperando...</span>
@@ -316,11 +344,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div class="streak-sub" id="sideStreakSub">¡Empieza hoy!</div>
   </div>
 
-  <nav class="sidebar-nav">
-    <a class="nav-item active" href="#">
-      <span class="nav-icon">📊</span> Dashboard
-    </a>
-  </nav>
+  <div class="sidebar-nav">
+    <div class="nav-stat-label" style="padding:0 4px 6px">🎯 MISIONES COMPLETADAS</div>
+    <div class="mision-list" id="sideMisionesLista">
+      <div class="mision-empty">Aún ninguna</div>
+    </div>
+  </div>
 
   <div class="sidebar-footer">
     PomoPet · UDP TICS I<br>
@@ -394,6 +423,35 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     </div>
   </div>
 
+    <div class="card" id="progressCard">
+      <div class="progress-head">
+        <div>
+          <div class="card-title">Progreso de estudio · últimos 30 días</div>
+          <div class="card-sub">Minutos enfocados por día y promedio móvil (7 días)</div>
+        </div>
+        <div class="progress-stats">
+          <div class="pstat">
+            <div class="pstat-val" id="pgTotalHoras">—</div>
+            <div class="pstat-lbl">Horas totales</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-val" id="pgPromedio">—</div>
+            <div class="pstat-lbl">Prom. diario</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-val" id="pgTendencia">—</div>
+            <div class="pstat-lbl">Vs. quincena anterior</div>
+          </div>
+        </div>
+      </div>
+      <div class="progress-chart-wrap" id="progressChart"></div>
+      <div class="progress-legend">
+        <span><span class="pl-swatch" style="background:rgba(200,240,96,0.35)"></span> Minutos enfocados / día</span>
+        <span><span class="pl-swatch" style="background:var(--purple)"></span> Promedio móvil 7 días</span>
+        <span><span class="pl-swatch" style="background:rgba(255,255,255,0.16)"></span> Meta diaria (100 min)</span>
+      </div>
+    </div>
+
     <div class="bottom-row">
     <div class="card">
       <div class="card-title">Estado del dispositivo</div>
@@ -430,8 +488,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 import {
   onCambioAuth, cerrarSesion, usuarioActual,
   getMascota, getRacha, getResumenDashboard,
-  getEstadisticasSemana, getHeatmap,
-  getHistorialSesiones,
+  getEstadisticasSemana, getHeatmap, getProgreso30,
+  getHistorialSesiones, getMisionesCompletadas,
   suscribirMascota, renombrarMascota,
   getEstadoDispositivo, suscribirEstadoDispositivo
 } from './supabase.js'
@@ -485,10 +543,11 @@ async function iniciarDashboard(usuario) {
 
   setLoadingProgress(40, 'Cargando mascota...')
 
-  const [mascRes, rachaRes, resumenRes, semanaRes, heatRes, histRes, cofreRes] = await Promise.all([
+  const [mascRes, rachaRes, resumenRes, semanaRes, heatRes, histRes, cofreRes, progresoRes, misionesRes] = await Promise.all([
     getMascota(), getRacha(), getResumenDashboard(),
     getEstadisticasSemana(), getHeatmap(),
-    getHistorialSesiones(8), getEstadoDispositivo()
+    getHistorialSesiones(8), getEstadoDispositivo(),
+    getProgreso30(), getMisionesCompletadas()
   ])
 
   setLoadingProgress(70, 'Renderizando datos...')
@@ -509,6 +568,23 @@ async function iniciarDashboard(usuario) {
     console.error('No se pudo cargar la racha (tabla "rachas"):', rachaRes.error)
   }
 
+  // Misiones completadas
+  const misionesEl = document.getElementById('sideMisionesLista')
+  if (misionesEl) {
+    const lista = misionesRes.data ?? []
+    if (lista.length === 0) {
+      misionesEl.innerHTML = '<div class="mision-empty">Aún ninguna</div>'
+    } else {
+      misionesEl.innerHTML = lista.map(m => `
+        <div class="mision-item">
+          <span class="mision-item-icon">${m.misiones?.icono ?? '🎯'}</span>
+          <span class="mision-item-nombre">${m.misiones?.nombre ?? 'Misión'}</span>
+        </div>
+      `).join('')
+    }
+  }
+  if (misionesRes.error) console.error('No se pudo cargar misiones completadas:', misionesRes.error)
+
   // Resumen métricas
   if (resumenRes.data) {
     renderMetricas(resumenRes.data)
@@ -528,6 +604,10 @@ async function iniciarDashboard(usuario) {
 
   // Cofre
   if (cofreRes.data) renderEstadoDispositivo(cofreRes.data)
+
+  // Progreso 30 días
+  if (progresoRes.data?.length) renderProgreso30(progresoRes.data)
+  else if (progresoRes.error) console.error('No se pudo cargar el progreso 30 días (tabla "estadisticas_diarias"):', progresoRes.error)
 
   setLoadingProgress(100, '¡Listo!')
 
@@ -606,10 +686,10 @@ function renderMascota(m) {
 
 function renderRacha(r) {
   const rachaActual = r.racha_actual ?? 0
+  const rachaMaxima = r.racha_maxima ?? 0
   document.getElementById('sideStreak').textContent      = rachaActual
-  document.getElementById('sideStreakBadge').textContent = '🔥 ' + rachaActual
   document.getElementById('sideStreakSub').textContent   =
-    rachaActual > 0 ? `Máximo: ${r.racha_maxima} días` : '¡Empieza hoy!'
+    rachaActual > 0 ? `Máximo: ${rachaMaxima} días` : '¡Empieza hoy!'
 }
 
 function renderMetricas(d) {
@@ -691,6 +771,81 @@ function renderSemanaVacia() {
     container.appendChild(row)
   })
   document.getElementById('growthVal').textContent = '0 sesiones'
+}
+
+// Progreso de estudio, últimos 30 días
+// data: [{ fecha:'YYYY-MM-DD', sesiones, minutos }, ...] (orden ascendente)
+function renderProgreso30(data) {
+  if (!data || !data.length) return
+
+  const totalMin = data.reduce((a, d) => a + d.minutos, 0)
+  const promedioMin = totalMin / data.length
+  const mitad = Math.floor(data.length / 2)
+  const primeraMitad = data.slice(0, mitad)
+  const segundaMitad = data.slice(mitad)
+  const primeraProm = primeraMitad.length ? primeraMitad.reduce((a,d) => a + d.minutos, 0) / primeraMitad.length : 0
+  const segundaProm = segundaMitad.length ? segundaMitad.reduce((a,d) => a + d.minutos, 0) / segundaMitad.length : 0
+  const tendenciaPct = primeraProm > 0 ? Math.round(((segundaProm - primeraProm) / primeraProm) * 100) : (segundaProm > 0 ? 100 : 0)
+
+  document.getElementById('pgTotalHoras').textContent = Math.round(totalMin / 60 * 10) / 10 + 'h'
+  document.getElementById('pgPromedio').textContent = Math.round(promedioMin) + ' min'
+  const tendEl = document.getElementById('pgTendencia')
+  tendEl.textContent = (tendenciaPct >= 0 ? '▲ +' : '▼ ') + tendenciaPct + '%'
+  tendEl.className = 'pstat-val ' + (tendenciaPct >= 0 ? 'up' : 'down')
+
+  // Promedio móvil de 7 días
+  const movAvg = data.map((_, i) => {
+    const desde = Math.max(0, i - 6)
+    const ventana = data.slice(desde, i + 1)
+    return ventana.reduce((a, d) => a + d.minutos, 0) / ventana.length
+  })
+
+  const W = 760, H = 190, PAD_L = 30, PAD_B = 18, PAD_T = 8
+  const chartW = W - PAD_L - 8
+  const chartH = H - PAD_B - PAD_T
+  const maxVal = Math.max(100, ...data.map(d => d.minutos)) // al menos 100 para que se vea la meta
+  const barW = chartW / data.length * 0.62
+  const step = chartW / data.length
+  const y = v => PAD_T + chartH - (v / maxVal) * chartH
+  const metaY = y(100)
+
+  const hoyISO = new Date().toISOString().split('T')[0]
+
+  let bars = ''
+  data.forEach((d, i) => {
+    const x = PAD_L + step * i + (step - barW) / 2
+    const h = (d.minutos / maxVal) * chartH
+    const esHoy = d.fecha === hoyISO
+    bars += `<rect class="pc-bar${esHoy ? ' today' : ''}" x="${x.toFixed(1)}" y="${y(d.minutos).toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="2">
+      <title>${d.fecha} · ${d.minutos} min · ${d.sesiones} sesión(es)</title>
+    </rect>`
+  })
+
+  let avgPath = ''
+  movAvg.forEach((v, i) => {
+    const x = PAD_L + step * i + step / 2
+    avgPath += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y(v).toFixed(1) + ' '
+  })
+
+  // Etiquetas de eje X: cada ~5 días
+  let axisLabels = ''
+  data.forEach((d, i) => {
+    if (i % 5 !== 0 && i !== data.length - 1) return
+    const x = PAD_L + step * i + step / 2
+    const [, m, day] = d.fecha.split('-')
+    axisLabels += `<text class="pc-axis-lbl" x="${x.toFixed(1)}" y="${H - 3}" text-anchor="middle">${day}/${m}</text>`
+  })
+
+  const svg = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <line class="pc-goal-line" x1="${PAD_L}" y1="${metaY}" x2="${W - 4}" y2="${metaY}"></line>
+      <text class="pc-axis-lbl" x="${PAD_L}" y="${metaY - 4}">meta 100</text>
+      ${bars}
+      <path class="pc-avg-line" d="${avgPath.trim()}"></path>
+      ${axisLabels}
+    </svg>`
+
+  document.getElementById('progressChart').innerHTML = svg
 }
 
 function renderHistorial(sesiones) {
